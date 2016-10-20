@@ -53,6 +53,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
     DcMotor backLeftMotor = null;
     DcMotor backRightMotor = null;
 
+    Impulse i = new Impulse();
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.addData("Status", "Initialized");
@@ -74,7 +76,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
 
         //variable setup
-        int buffer = 50;            //how far the joystick must move before moving the motors
+        double buffer = 0.25;            //how far the joystick must move before moving the motors
         String direction = "stop";  //the direction the robot will be heading
         double motorSpeed = 0;          //the power the motors will be set to
 
