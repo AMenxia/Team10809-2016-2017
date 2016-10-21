@@ -35,14 +35,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@TeleOp(name = "Omnidirectional Drive", group = "Linear Opmode")
+@TeleOp(name = "Omnidirectional Drive TestMotors", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
 //@Disabled
-public class Omnidirectional_Drive extends LinearOpMode {
+public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -141,7 +140,32 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 direction = "counter clockwise";
             }
 
+        //move each motor individually
+        if (gamepad1.dpad_left) {
+            backLeftMotor.setPower(motorSpeed);
+        } else {
+            backLeftMotor.setPower(0);
+        }
 
+        if (gamepad1.dpad_down) {
+            backRightMotor.setPower(motorSpeed);
+        } else {
+            backRightMotor.setPower(0);
+        }
+
+        if (gamepad1.dpad_up) {
+            frontLeftMotor.setPower(motorSpeed);
+        } else {
+            frontLeftMotor.setPower(0);
+        }
+
+        if (gamepad1.dpad_right) {
+            frontRightMotor.setPower(motorSpeed);
+        } else {
+            frontRightMotor.setPower(0);
+        }
+
+/*
             switch (direction) {//set the motors at different speeds based off of the directions
                 case "left forwards":
 
@@ -252,7 +276,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
                     break;
 
             }
-
+*/
 
             idle(); // Always call idle() at the bottom of your while(opModeIsActive()) loop
         }
