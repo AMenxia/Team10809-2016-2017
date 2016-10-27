@@ -35,14 +35,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@TeleOp(name = "Omnidirectional Drive", group = "Linear Opmode")
+@TeleOp(name = "Omnidirectional Drive Anglular", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
 //@Disabled
-public class Omnidirectional_Drive extends LinearOpMode {
+public class Omnidirectional_Drive_Angular extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -64,6 +63,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
         double buffer = 0.25;            //how far the joystick must move before moving the motors
         String direction = "stop";      //the direction the robot will be heading
         double motorSpeed = 0.25;          //the power the motors will be set to
+        double angle = 0;               //the angle the
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -85,11 +85,36 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Direction :",  direction);
             telemetry.addData( "Motor Speed: ", motorSpeed);
+            telemetry.addData("Angle: ", angle);
             telemetry.update();
 
 
             //modify motor speed based off of how far the joystick is being pushed
             motorSpeed = Math.sqrt(gamepad1.left_stick_x*gamepad1.left_stick_x + gamepad1.left_stick_y*gamepad1.left_stick_y) - 0.25;
+
+            //finds the angle that the joystick is aiming
+            if (gamepad1.left_stick_x == 0){//prevents divide by zero errors
+                if (gamepad1.left_stick_y >= 0){
+                    angle = 90;
+                } else {
+                    angle = 270;
+                }
+            } else {
+                if (gamepad1.left_stick_x >= 0) {//atan will provide values -90 to 90, adds other half of the circle
+                    angle = Math.atan(gamepad1.left_stick_y / gamepad1.left_stick_x);
+                } else {
+                    angle = Math.atan(gamepad1.left_stick_y / gamepad1.left_stick_x) + 180;
+                }
+            }
+
+            while (angle > 360 || angle < 0) {//keeps the values in the range of 0 to 360, will shift by a full rotation
+                if (angle < 0) {
+                    angle += 360;
+                } else if (angle > 360) {
+                    angle -= 360;
+                }
+            }
+
 
             //set movement direction based off of stick
             if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
@@ -121,6 +146,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
             }
 
+            //making the robot spin
             if (gamepad1.right_stick_x > buffer) {
                 direction = "clockwise";
             } else if (gamepad1.right_stick_x < -buffer) {
@@ -128,6 +154,12 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
 
+
+
+
+
+
+/*
             switch (direction) {//set the motors at different speeds based off of the directions
                 case "left forwards":
 
@@ -238,7 +270,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
                     break;
 
             }
-
+*/
 
             idle(); // Always call idle() at the bottom of your while(opModeIsActive()) loop
         }
