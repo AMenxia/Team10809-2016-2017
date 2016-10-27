@@ -46,9 +46,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
-    // DcMotor leftMotor = null;
-    // DcMotor rightMotor = null;
-
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
     DcMotor backLeftMotor = null;
@@ -61,24 +58,11 @@ public class Omnidirectional_Drive extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        /* eg: Initialize the hardware variables. Note that the strings used here as parameters
-         * to 'get' must correspond to the names assigned during the robot configuration
-         * step (using the FTC Robot Controller app on the phone).
-         */
-        // leftMotor  = hardwareMap.dcMotor.get("left motor");
-        // rightMotor = hardwareMap.dcMotor.get("right motor");
-
-        // eg: Set the drive motor directions:
-        // "Reverse" the motor that runs backwards when connected directly to the battery
-        // leftMotor.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        // rightMotor.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
-
-        // Wait for the game to start (driver presses PLAY)
 
 
         //variable setup
         double buffer = 0.25;            //how far the joystick must move before moving the motors
-        String direction = "stop";  //the direction the robot will be heading
+        String direction = "stop";      //the direction the robot will be heading
         double motorSpeed = 0.25;          //the power the motors will be set to
 
         //motor setup
@@ -99,13 +83,15 @@ public class Omnidirectional_Drive extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Direction", "Direction: " + direction);
-            telemetry.addData("Motor Speed", "Motor Speed: " + motorSpeed);
+            telemetry.addData("Direction :",  direction);
+            telemetry.addData( "Motor Speed: ", motorSpeed);
             telemetry.update();
 
 
+            //modify motor speed based off of how far the joystick is being pushed
+
             //set movement direction based off of stick
-            if (gamepad1.left_stick_x < -buffer) {
+            if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
                 if (gamepad1.left_stick_y < -buffer) {
                     direction = "left forwards";
                 } else if (gamepad1.left_stick_y > buffer) {
@@ -133,7 +119,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 }
 
             }
-
+            //
 
             if (gamepad1.right_stick_x > buffer) {
                 direction = "clockwise";
