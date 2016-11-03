@@ -80,6 +80,8 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
         String direction = "stop";  //the direction the robot will be heading
         double motorSpeed = 0.25;          //the power the motors will be set to
 
+        i.setTelemetry(telemetry);
+
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
         frontRightMotor = hardwareMap.dcMotor.get("front right");

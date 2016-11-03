@@ -36,7 +36,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -71,6 +70,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
         int pullBackTime = 100;         //how long the gun pulls back for
         boolean colorSensorLEDOn = true;//if the color sensor LED is on or not
         boolean buttonPressed1 = false; //if a,b,x, or y is pressed on gamepad1
+
+        i.setTelemetry(telemetry);
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -134,11 +135,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             //turning on and off the light on the color sensor
             if(gamepad1.x && !buttonPressed1){
                 buttonPressed1 = true;
-                if(colorSensorLEDOn){
-                    colorSensorLEDOn = false;
-                } else {
-                    colorSensorLEDOn = true;
-                }
+                colorSensorLEDOn = !colorSensorLEDOn;
             } else if(!gamepad1.x){
                 buttonPressed1 = false;
             }
