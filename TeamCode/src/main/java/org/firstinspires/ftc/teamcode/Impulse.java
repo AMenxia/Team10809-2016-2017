@@ -15,8 +15,12 @@ public class Impulse {
     Telemetry telemetry;
 
     public void hardwareCheck(HardwareDevice hardwareDevice) throws TelemetryException {
-        telemetry.addData("Name: ", hardwareDevice.getDeviceName());
-        telemetry.addData("Connection Info: ", hardwareDevice.getConnectionInfo());
+        try {
+            telemetry.addData("Name: ", hardwareDevice.getDeviceName());
+            telemetry.addData("Connection Info: ", hardwareDevice.getConnectionInfo());
+        } catch (NullPointerException n) {
+            throw new TelemetryException();
+        }
     }
 
     public void setTelemetry(Telemetry telemetry) {
