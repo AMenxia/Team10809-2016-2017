@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -14,9 +14,9 @@ public class Impulse {
 
     Telemetry telemetry;
 
-    public void hardwareCheck(DcMotor dcMotor) throws TelemetryException {
-        telemetry.addData("Name: ", dcMotor.getDeviceName());
-        telemetry.addData("Connection Info: ", dcMotor.getConnectionInfo());
+    public void hardwareCheck(HardwareDevice hardwareDevice) throws TelemetryException {
+        telemetry.addData("Name: ", hardwareDevice.getDeviceName());
+        telemetry.addData("Connection Info: ", hardwareDevice.getConnectionInfo());
     }
 
     public void setTelemetry(Telemetry telemetry) {
