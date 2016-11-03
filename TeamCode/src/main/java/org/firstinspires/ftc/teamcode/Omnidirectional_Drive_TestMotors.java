@@ -45,8 +45,7 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
-    // DcMotor leftMotor = null;
-    // DcMotor rightMotor = null;
+
 
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
@@ -60,19 +59,6 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        /* eg: Initialize the hardware variables. Note that the strings used here as parameters
-         * to 'get' must correspond to the names assigned during the robot configuration
-         * step (using the FTC Robot Controller app on the phone).
-         */
-        // leftMotor  = hardwareMap.dcMotor.get("left motor");
-        // rightMotor = hardwareMap.dcMotor.get("right motor");
-
-        // eg: Set the drive motor directions:
-        // "Reverse" the motor that runs backwards when connected directly to the battery
-        // leftMotor.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        // rightMotor.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
-
-        // Wait for the game to start (driver presses PLAY)
 
 
         //variable setup
@@ -102,181 +88,38 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
             telemetry.addData("Motor Speed", "Motor Speed: " + motorSpeed);
             telemetry.update();
 
+            direction = "";
 
-            //set movement direction based off of stick
-            if (gamepad1.left_stick_x < -buffer) {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "left forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "left backwards";
-                } else {
-                    direction = "left";
-                }
-
-            } else if (gamepad1.left_stick_x > buffer) {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "right forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "right backwards";
-                } else {
-                    direction = "right";
-                }
-
-            } else {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "backwards";
-                } else {
-                    direction = "stop";
-                }
-
-            }
-
-
-            if (gamepad1.right_stick_x > buffer) {
-                direction = "clockwise";
-            } else if (gamepad1.right_stick_x < -buffer) {
-                direction = "counter clockwise";
-            }
 
         //move each motor individually
         if (gamepad1.dpad_left) {
             backLeftMotor.setPower(motorSpeed);
+            direction = "back left ";
         } else {
             backLeftMotor.setPower(0);
         }
 
         if (gamepad1.dpad_down) {
             backRightMotor.setPower(motorSpeed);
+            direction = "back right ";
         } else {
             backRightMotor.setPower(0);
         }
 
         if (gamepad1.dpad_up) {
             frontLeftMotor.setPower(motorSpeed);
+            direction = "front left ";
         } else {
             frontLeftMotor.setPower(0);
         }
 
         if (gamepad1.dpad_right) {
             frontRightMotor.setPower(motorSpeed);
+            direction = "front right ";
         } else {
             frontRightMotor.setPower(0);
         }
 
-/*
-            switch (direction) {//set the motors at different speeds based off of the directions
-                case "left forwards":
-
-                    frontLeftMotor.setPower(0);
-                    frontRightMotor.setPower(motorSpeed);
-                    backLeftMotor.setPower(motorSpeed);
-                    backRightMotor.setPower(0);
-
-                    break;
-
-                case "left backwards":
-
-                    frontLeftMotor.setPower(-motorSpeed);
-                    frontRightMotor.setPower(0);
-                    backLeftMotor.setPower(0);
-                    backRightMotor.setPower(-motorSpeed);
-
-                    break;
-
-                case "left":
-
-                    frontLeftMotor.setPower(-motorSpeed);
-                    frontRightMotor.setPower(motorSpeed);
-                    backLeftMotor.setPower(motorSpeed);
-                    backRightMotor.setPower(-motorSpeed);
-
-                    break;
-
-                case "right forwards":
-
-                    frontLeftMotor.setPower(motorSpeed);
-                    frontRightMotor.setPower(0);
-                    backLeftMotor.setPower(0);
-                    backRightMotor.setPower(motorSpeed);
-
-                    break;
-
-                case "right backwards":
-
-                    frontLeftMotor.setPower(0);
-                    frontRightMotor.setPower(-motorSpeed);
-                    backLeftMotor.setPower(-motorSpeed);
-                    backRightMotor.setPower(0);
-
-                    break;
-
-                case "right":
-
-                    frontLeftMotor.setPower(motorSpeed);
-                    frontRightMotor.setPower(-motorSpeed);
-                    backLeftMotor.setPower(-motorSpeed);
-                    backRightMotor.setPower(motorSpeed);
-
-                    break;
-
-                case "forwards":
-
-                    frontLeftMotor.setPower(motorSpeed);
-                    frontRightMotor.setPower(motorSpeed);
-                    backLeftMotor.setPower(motorSpeed);
-                    backRightMotor.setPower(motorSpeed);
-
-                    break;
-
-                case "backwards":
-
-                    frontLeftMotor.setPower(-motorSpeed);
-                    frontRightMotor.setPower(-motorSpeed);
-                    backLeftMotor.setPower(-motorSpeed);
-                    backRightMotor.setPower(-motorSpeed);
-
-                    break;
-
-                case "stop":
-
-                    frontLeftMotor.setPower(0);
-                    frontRightMotor.setPower(0);
-                    backLeftMotor.setPower(0);
-                    backRightMotor.setPower(0);
-
-                    break;
-
-                case "clockwise":
-
-                    frontLeftMotor.setPower(motorSpeed);
-                    frontRightMotor.setPower(-motorSpeed);
-                    backLeftMotor.setPower(motorSpeed);
-                    backRightMotor.setPower(-motorSpeed);
-
-                    break;
-
-                case "counter clockwise":
-
-                    frontLeftMotor.setPower(-motorSpeed);
-                    frontRightMotor.setPower(motorSpeed);
-                    backLeftMotor.setPower(-motorSpeed);
-                    backRightMotor.setPower(motorSpeed);
-
-                    break;
-
-                default:
-
-                    frontLeftMotor.setPower(0);
-                    frontRightMotor.setPower(0);
-                    backLeftMotor.setPower(0);
-                    backRightMotor.setPower(0);
-
-                    break;
-
-            }
-*/
 
             idle(); // Always call idle() at the bottom of your while(opModeIsActive()) loop
         }

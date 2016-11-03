@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -51,6 +52,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
     DcMotor frontRightMotor = null;
     DcMotor backLeftMotor = null;
     DcMotor backRightMotor = null;
+    Servo leftFlipper = null;
+    Servo rightFlipper = null;
 
     DcMotor shootMotor = null;
 
@@ -87,6 +90,9 @@ public class Omnidirectional_Drive extends LinearOpMode {
         backRightMotor.setDirection(DcMotor.Direction.FORWARD);
 
         shootMotor.setDirection(DcMotor.Direction.FORWARD);
+
+        leftFlipper = hardwareMap.servo.get("left flipper");
+        rightFlipper = hardwareMap.servo.get("right flipper");
 
         //sensor setup
         colorSensor = hardwareMap.colorSensor.get("color sensor");
