@@ -33,7 +33,4 @@ class TelemetryException extends Exception {
         throw new NullPointerException("Telemetry was never defined in Impulse. Use the setTelemetry() method before using Impulse.");
     }
 
-    public TelemetryException(String message) {
-        throw new NullPointerException(message);
-    }
 }
