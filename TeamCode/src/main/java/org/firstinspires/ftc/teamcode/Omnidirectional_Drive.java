@@ -68,31 +68,42 @@ public class Omnidirectional_Drive extends LinearOpMode {
         double buffer = 0.25;           //how far the joystick must move before moving the motors
         String direction = "stop";      //the direction the robot will be heading
         double motorSpeed = 0.25;       //the power the motors will be set to
+
         boolean shooting = false;       //if the robot is in the process of shooting
         int shootTimer = 0;             //how long the gun has been shooting for
         double shootSpeed = 0.25;       //how fast the gun shoots at
         int pullBackTime = 100;         //how long the gun pulls back for
+
         boolean colorSensorLEDOn = true;//if the color sensor LED is on or not
         boolean buttonPressed1 = false; //if a,b,x, or y is pressed on gamepad1
+
+        double leftFlipperBack = 0.0;     //position of the left flipper when retracted
+        double leftFlipperForward = 1.0;//position of the left flipper when extended
+        boolean leftFlipperOut = false; //if the left flipper is out or not
+
+        double rightFlipperBack = 1.0;     //position of the right flipper when retracted
+        double rightFlipperForward = 0.0;//position of the right flipper when extended
+        boolean rightFlipperOut = false; //if the right flipper is out or not
+
+        i.setTelemetry(telemetry);
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
         frontRightMotor = hardwareMap.dcMotor.get("front right");
         backLeftMotor = hardwareMap.dcMotor.get("back left");
         backRightMotor = hardwareMap.dcMotor.get("back right");
+        leftFlipper = hardwareMap.servo.get("left flipper");
+        rightFlipper = hardwareMap.servo.get("right flipper");
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
 
-        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
-        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
         shootMotor.setDirection(DcMotor.Direction.FORWARD);
-
-        leftFlipper = hardwareMap.servo.get("left flipper");
-        rightFlipper = hardwareMap.servo.get("right flipper");
 
         //sensor setup
         colorSensor = hardwareMap.colorSensor.get("color sensor");
@@ -114,6 +125,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Direction :",  direction);
             telemetry.addData( "Motor Speed: ", motorSpeed);
             telemetry.addData("Colors ", "Red: " + colorSensor.red() + "Green: " + colorSensor.green() + "Blue: " + colorSensor.blue());
+            telemetry.addData("Flippers: ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
             telemetry.update();
 
 
@@ -136,15 +148,29 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
             }
 
+            //controlling the flippers
+            if (gamepad2.dpad_left){
+                leftFlipperOut = true;
+                leftFlipper.setPosition(leftFlipperForward);
+            } else {
+                leftFlipperOut = false;
+                leftFlipper.setPosition(leftFlipperBack);
+            }
+
+            if (gamepad2.dpad_right){
+                rightFlipperOut = true;
+                rightFlipper.setPosition(rightFlipperForward);
+            } else {
+                rightFlipperOut = false;
+                rightFlipper.setPosition(rightFlipperBack);
+            }
+
+
 
             //turning on and off the light on the color sensor
             if(gamepad1.x && !buttonPressed1){
                 buttonPressed1 = true;
-                if(colorSensorLEDOn){
-                    colorSensorLEDOn = false;
-                } else {
-                    colorSensorLEDOn = true;
-                }
+                colorSensorLEDOn = !colorSensorLEDOn;
             } else if(!gamepad1.x){
                 buttonPressed1 = false;
             }
