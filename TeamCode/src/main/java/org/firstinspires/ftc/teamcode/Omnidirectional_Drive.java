@@ -78,12 +78,12 @@ public class Omnidirectional_Drive extends LinearOpMode {
         boolean colorSensorLEDOn = true;//if the color sensor LED is on or not
         boolean buttonPressed1 = false; //if a,b,x, or y is pressed on gamepad1
 
-        double leftFlipperBack = 0.0;     //position of the left flipper when retracted
-        double leftFlipperForward = 1.0;//position of the left flipper when extended
+        double leftFlipperBack = 1.0;     //position of the left flipper when retracted
+        double leftFlipperForward = 0.0;//position of the left flipper when extended
         boolean leftFlipperOut = false; //if the left flipper is out or not
 
-        double rightFlipperBack = 1.0;     //position of the right flipper when retracted
-        double rightFlipperForward = 0.0;//position of the right flipper when extended
+        double rightFlipperBack = 0.0;     //position of the right flipper when retracted
+        double rightFlipperForward = 1.0;//position of the right flipper when extended
         boolean rightFlipperOut = false; //if the right flipper is out or not
 
         //motor setup
@@ -125,6 +125,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Motor Speed: ", motorSpeed);
             telemetry.addData("Colors ", "Red: " + colorSensor.red() + "Green: " + colorSensor.green() + "Blue: " + colorSensor.blue());
             telemetry.addData("Flippers: ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
+            telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
             telemetry.update();
 
 
