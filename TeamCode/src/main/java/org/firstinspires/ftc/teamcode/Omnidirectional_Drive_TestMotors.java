@@ -46,7 +46,6 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
 
-
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
     DcMotor backLeftMotor = null;
@@ -58,7 +57,6 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
 
 
         //variable setup
@@ -93,34 +91,34 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
             direction = "";
 
 
-        //move each motor individually
-        if (gamepad1.dpad_left) {
-            backLeftMotor.setPower(motorSpeed);
-            direction = "back left ";
-        } else {
-            backLeftMotor.setPower(0);
-        }
+            //move each motor individually
+            if (gamepad1.dpad_left) {
+                backLeftMotor.setPower(motorSpeed);
+                direction = "back left ";
+            } else {
+                backLeftMotor.setPower(0);
+            }
 
-        if (gamepad1.dpad_down) {
-            backRightMotor.setPower(motorSpeed);
-            direction = "back right ";
-        } else {
-            backRightMotor.setPower(0);
-        }
+            if (gamepad1.dpad_down) {
+                backRightMotor.setPower(motorSpeed);
+                direction = "back right ";
+            } else {
+                backRightMotor.setPower(0);
+            }
 
-        if (gamepad1.dpad_up) {
-            frontLeftMotor.setPower(motorSpeed);
-            direction = "front left ";
-        } else {
-            frontLeftMotor.setPower(0);
-        }
+            if (gamepad1.dpad_up) {
+                frontLeftMotor.setPower(motorSpeed);
+                direction = "front left ";
+            } else {
+                frontLeftMotor.setPower(0);
+            }
 
-        if (gamepad1.dpad_right) {
-            frontRightMotor.setPower(motorSpeed);
-            direction = "front right ";
-        } else {
-            frontRightMotor.setPower(0);
-        }
+            if (gamepad1.dpad_right) {
+                frontRightMotor.setPower(motorSpeed);
+                direction = "front right ";
+            } else {
+                frontRightMotor.setPower(0);
+            }
 
 
             idle(); // Always call idle() at the bottom of your while(opModeIsActive()) loop

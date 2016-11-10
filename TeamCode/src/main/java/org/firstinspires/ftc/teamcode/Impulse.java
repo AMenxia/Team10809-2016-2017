@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 /**
  * Created by alex on 10/19/16.
  * <p>
@@ -12,25 +10,22 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Impulse {
 
-    Telemetry telemetry;
+    Crow crow;
 
-    public void hardwareCheck(HardwareDevice hardwareDevice) throws TelemetryException {
-        try {
-            telemetry.addData("Name: ", hardwareDevice.getDeviceName());
-            telemetry.addData("Connection Info: ", hardwareDevice.getConnectionInfo());
-        } catch (NullPointerException n) {
-            throw new TelemetryException();
-        }
+    public void hardwareCheck(HardwareDevice hardwareDevice) {
+        crow.telemetry.addData("Name: ", hardwareDevice.getDeviceName());
+        crow.telemetry.addData("Connection Info: ", hardwareDevice.getConnectionInfo());
     }
 
-    public void setTelemetry(Telemetry telemetry) {
-        this.telemetry = telemetry;
+    public void stop() {
+        crow.frontLeftMotor.setPower(0);
+        crow.frontRightMotor.setPower(0);
+        crow.backLeftMotor.setPower(0);
+        crow.backRightMotor.setPower(0);
     }
-}
 
-class TelemetryException extends Exception {
-    public TelemetryException() {
-        throw new NullPointerException("Telemetry was never defined in Impulse. Use the setTelemetry() method before using Impulse.");
+    public void setCrow(Crow crow) {
+        this.crow = crow;
     }
 
 }

@@ -36,7 +36,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -87,8 +86,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
         double rightFlipperForward = 0.0;//position of the right flipper when extended
         boolean rightFlipperOut = false; //if the right flipper is out or not
 
-        i.setTelemetry(telemetry);
-
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
         frontRightMotor = hardwareMap.dcMotor.get("front right");
@@ -99,6 +96,9 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
+        Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, colorSensor);
+        Impulse i = new Impulse();
+        i.setCrow(crow);
 
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -111,9 +111,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
         colorSensor = hardwareMap.colorSensor.get("color sensor");
 
 
-
-
-
         colorSensor.enableLed(colorSensorLEDOn);//turn on the color sensor light when init
         telemetry.addData("Status", "Initialized");//tell that everything is started
         telemetry.update();
@@ -124,23 +121,22 @@ public class Omnidirectional_Drive extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Direction :",  direction);
-            telemetry.addData( "Motor Speed: ", motorSpeed);
+            telemetry.addData("Direction :", direction);
+            telemetry.addData("Motor Speed: ", motorSpeed);
             telemetry.addData("Colors ", "Red: " + colorSensor.red() + "Green: " + colorSensor.green() + "Blue: " + colorSensor.blue());
             telemetry.addData("Flippers: ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
             telemetry.update();
 
 
-
             //code for shooting the projectile (WIP)
-            if(gamepad1.a && !shooting){
+            if (gamepad1.a && !shooting) {
                 shooting = true;
                 shootTimer = 0;
             }
 
-            if(shooting){
+            if (shooting) {
                 shootTimer++;
-                if (shootTimer < pullBackTime){
+                if (shootTimer < pullBackTime) {
                     shootMotor.setPower(shootSpeed);
                 } else {
                     shootMotor.setPower(0);
@@ -151,7 +147,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
             //controlling the flippers
-            if (gamepad2.dpad_left){
+            if (gamepad2.dpad_left) {
                 leftFlipperOut = true;
                 leftFlipper.setPosition(leftFlipperForward);
             } else {
@@ -159,7 +155,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 leftFlipper.setPosition(leftFlipperBack);
             }
 
-            if (gamepad2.dpad_right){
+            if (gamepad2.dpad_right) {
                 rightFlipperOut = true;
                 rightFlipper.setPosition(rightFlipperForward);
             } else {
@@ -168,24 +164,19 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
 
-
             //turning on and off the light on the color sensor
-            if(gamepad1.x && !buttonPressed1){
+            if (gamepad1.x && !buttonPressed1) {
                 buttonPressed1 = true;
                 colorSensorLEDOn = !colorSensorLEDOn;
-            } else if(!gamepad1.x){
+            } else if (!gamepad1.x) {
                 buttonPressed1 = false;
             }
 
 
-
-
-            
-
             ///------------------Movement code below------------------\\\
 
             //modify motor speed based off of how far the joystick is being pushed
-            motorSpeed = Math.sqrt(Math.min(0, (abs(gamepad1.left_stick_x)-0.25)*(abs(gamepad1.left_stick_x)-0.25))+ Math.min(0,(abs(gamepad1.left_stick_y)-0.25)*(abs(gamepad1.left_stick_y)-0.25)));
+            motorSpeed = Math.sqrt(Math.min(0, (abs(gamepad1.left_stick_x) - 0.25) * (abs(gamepad1.left_stick_x) - 0.25)) + Math.min(0, (abs(gamepad1.left_stick_y) - 0.25) * (abs(gamepad1.left_stick_y) - 0.25)));
 
 
             //set movement direction based off of stick
