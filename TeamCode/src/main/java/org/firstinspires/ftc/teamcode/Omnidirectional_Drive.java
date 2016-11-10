@@ -40,6 +40,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import static java.lang.Math.abs;
+
 
 @TeleOp(name = "Omnidirectional Drive", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
@@ -183,7 +185,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
             ///------------------Movement code below------------------\\\
 
             //modify motor speed based off of how far the joystick is being pushed
-            motorSpeed = Math.sqrt(gamepad1.left_stick_x*gamepad1.left_stick_x + gamepad1.left_stick_y*gamepad1.left_stick_y) - 0.25;
+            motorSpeed = Math.sqrt(Math.min(0, (abs(gamepad1.left_stick_x)-0.25)*(abs(gamepad1.left_stick_x)-0.25))+ Math.min(0,(abs(gamepad1.left_stick_y)-0.25)*(abs(gamepad1.left_stick_y)-0.25)));
+
 
             //set movement direction based off of stick
             if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
