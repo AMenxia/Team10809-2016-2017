@@ -70,7 +70,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
         //variable setup
         String direction = "stop";          //the direction the robot will be heading
-        double motorSpeed = 0.25;           //the power the motors will be set to
+        double motorSpeed = 0.50;           //the power the motors will be set to
         double spinSpeed = 0.25;            //the power the motors will be set to while spinning
 
         boolean shooting = false;           //if the robot is in the process of shooting
@@ -90,6 +90,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         boolean rightFlipperOut = false;    //if the right flipper is out or not
 
         String colorSensed = "none";
+        String colorToPress = "none";
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -141,17 +142,17 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
 
             //autonomous logik
-            /*
+
             if (getRuntime() <  3){
-                direction = "forwards";
+                direction = "right forwards";
             } else if (getRuntime() < 5){
-                direction = "clockwise";
+                direction = "forwards";
             } else if (getRuntime() < 7){
-                direction = "counter clockwise";
+                direction = "stop";
             } else {
                 direction = "stop";
             }
-            */
+
 
             if (colorSensor.red()> colorSensor.blue()){
                 colorSensed = "red";
@@ -159,34 +160,25 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 colorSensed = "blue";
             }
 
-            if(gamepad2.x){
-                if (colorSensed == "blue"){
-                    leftFlipperOut = true;
-                    rightFlipperOut = false;
-                } else if (colorSensed == "red"){
-                    leftFlipperOut = false;
-                    rightFlipperOut = true;
-                } else {
-                    leftFlipperOut = false;
-                    rightFlipperOut = false;
-                }
-            } else
-
-            if(gamepad2.b){
-                if (colorSensed == "red"){
-                    leftFlipperOut = true;
-                    rightFlipperOut = false;
-                } else if (colorSensed == "blue"){
-                    leftFlipperOut = false;
-                    rightFlipperOut = true;
-                } else {
-                    leftFlipperOut = false;
-                    rightFlipperOut = false;
-                }
+            if (gamepad2.x){
+                colorToPress = "blue";
+            } else if (gamepad2.b){
+                colorToPress = "red";
             } else {
-                leftFlipperOut = false;
-                rightFlipperOut = false;
-        }
+                colorToPress = "none";
+            }
+
+           if (colorSensed == "none" || colorToPress == "none"){
+               leftFlipperOut = false;
+               rightFlipperOut = false;
+           } else if (colorSensed == colorToPress){
+               leftFlipperOut = true;
+               rightFlipperOut = false;
+           } else {
+               leftFlipperOut = false;
+               rightFlipperOut = true;
+           }
+
 
             if(leftFlipperOut){
                 leftFlipper.setPosition(leftFlipperForward);

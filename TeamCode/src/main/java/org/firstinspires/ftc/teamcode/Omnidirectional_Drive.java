@@ -196,9 +196,9 @@ public class Omnidirectional_Drive extends LinearOpMode {
             ///------------------Movement code below------------------\\\
 
             //modify motor speed based off of how far the joystick is being pushed
-            //(idea) motorSpeed = Math.sqrt(Math.min(0, (abs(gamepad1.left_stick_x) - 0.25) * (abs(gamepad1.left_stick_x) - 0.25)) + Math.min(0, (abs(gamepad1.left_stick_y) - 0.25) * (abs(gamepad1.left_stick_y) - 0.25)));
-            motorSpeed = Math.sqrt(gamepad1.left_stick_x*gamepad1.left_stick_x + gamepad1.left_stick_y*gamepad1.left_stick_y) - buffer;
-            spinSpeed = Math.abs(gamepad1.right_stick_x) - buffer;
+            motorSpeed = Math.min(1,(Math.sqrt(Math.max(0, gamepad1.left_stick_x - 0.25) * Math.max(0, gamepad1.left_stick_x - 0.25) + Math.max(0, gamepad1.left_stick_y - 0.25) * Math.max(0, gamepad1.left_stick_y - 0.25)))/0.75);
+            //(old) motorSpeed = Math.sqrt(gamepad1.left_stick_x*gamepad1.left_stick_x + gamepad1.left_stick_y*gamepad1.left_stick_y) - buffer;
+            spinSpeed = Math.max(0, Math.abs(gamepad1.right_stick_x) - buffer);
 
             //set movement direction based off of stick
             if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
