@@ -72,6 +72,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         String direction = "stop";          //the direction the robot will be heading
         double motorSpeed = 0.50;           //the power the motors will be set to
         double spinSpeed = 0.25;            //the power the motors will be set to while spinning
+        double ticksPerRev = 1120;          //the amount of ticks per revolution of the wheel
 
         boolean shooting = false;           //if the robot is in the process of shooting
         int shootTimer = 0;                 //how long the gun has been shooting for
@@ -91,6 +92,10 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
         String colorSensed = "none";
         String colorToPress = "none";
+        boolean wallReached = false;
+        boolean lineDectected = false;
+
+        int lineLight = 50;                 //the value at which the line gives off light
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -110,6 +115,11 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shootMotor.setDirection(DcMotor.Direction.FORWARD);
 
@@ -136,18 +146,20 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             telemetry.addData("Color Sensed: ", colorSensed);
             telemetry.addData("Flippers - ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
             telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
-            telemetry.addData("Touch - ", "left: " + leftTouch + " right: " + rightTouch);
+            telemetry.addData("Touch - ", "left: " + leftTouch.isPressed() + " right: " + rightTouch.isPressed());
             telemetry.addData("ODS: ", lineReader.getRawLightDetected());
             telemetry.update();
 
 
             //autonomous logik
 
-            if (getRuntime() <  3){
-                direction = "right forwards";
-            } else if (getRuntime() < 5){
-                direction = "forwards";
-            } else if (getRuntime() < 7){
+            if (!leftTouch.isPressed() || !rightTouch.isPressed() || wallReached){
+                //direction = "right backwards";
+                colorToPress = "blue";
+            } else if (lineReader.getRawLightDetected() < lineLight || lineDectected ){
+                wallReached = true;
+                //direction = "backwards";
+            } else if (false){
                 direction = "stop";
             } else {
                 direction = "stop";
@@ -160,6 +172,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 colorSensed = "blue";
             }
 
+            /*
             if (gamepad2.x){
                 colorToPress = "blue";
             } else if (gamepad2.b){
@@ -167,6 +180,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             } else {
                 colorToPress = "none";
             }
+            */
 
            if (colorSensed == "none" || colorToPress == "none"){
                leftFlipperOut = false;
