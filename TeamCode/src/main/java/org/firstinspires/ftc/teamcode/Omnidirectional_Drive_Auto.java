@@ -36,6 +36,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -55,10 +56,14 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
     DcMotor backRightMotor = null;
     Servo leftFlipper = null;
     Servo rightFlipper = null;
+    Servo leftArm = null;
+    Servo rightArm = null;
+    Servo holder1 = null;
 
     DcMotor shootMotor = null;
 
-    ColorSensor colorSensor;  // Hardware Device Object
+    ColorSensor leftColor;  // Hardware Device Object
+    ColorSensor rightColor;
     TouchSensor leftTouch;
     TouchSensor rightTouch;
     OpticalDistanceSensor lineReader;
@@ -69,17 +74,19 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         //variable setup
+        double buffer = 0.25;               //how far the joystick must move before moving the motors
         String direction = "stop";          //the direction the robot will be heading
-        double motorSpeed = 0.50;           //the power the motors will be set to
+        double motorSpeed = 0.5;           //the power the motors will be set to
+        int maxSpeed = 2800;
         double spinSpeed = 0.25;            //the power the motors will be set to while spinning
-        double ticksPerRev = 1120;          //the amount of ticks per revolution of the wheel
+        double ticksPerRev = 1120;          //the amount of encoder ticks per revolution of the wheel
 
-        boolean shooting = false;           //if the robot is in the process of shooting
         int shootTimer = 0;                 //how long the gun has been shooting for
-        double shootSpeed = 0.25;           //how fast the gun shoots at
-        int pullBackTime = 100;             //how long the gun pulls back for
+        double shootSpeed = 1;              //how fast the gun shoots at
+        int shootMax = 50;                  //the maximum position of the launcher
+        int shootMin = 10;                  //the minimum position of the launcher
 
-        boolean colorSensorLEDOn = true;    //if the color sensor LED is on or not
+        boolean colorSensorLEDOn = false;    //if the color sensor LED is on or not
         boolean buttonPressed1 = false;     //if a,b,x, or y is pressed on gamepad1
 
         double leftFlipperBack = 0.25;      //position of the left flipper when retracted
@@ -90,26 +97,58 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         double rightFlipperForward = 1.0;   //position of the right flipper when extended
         boolean rightFlipperOut = false;    //if the right flipper is out or not
 
-        String colorSensed = "none";
+        double leftArmUp = 0.80;            //position of the left arm when up
+        double leftArmDown = 0.2;           //position of the left arm when down
+        boolean leftArmOut = false;         //if the left arm is out or not
+
+        double holderUp = 1;                //position of the holder when up
+        double holder1Down = 0.5;            //position of the holder when down
+        boolean holder1Out = false;          //if the holder is down or not
+
+
+
+        //auto variables
+        String leftColorSensed = "none";
+        String rightColorSensed = "none";
+        String SIDE_COLOR = "blue";
         String colorToPress = "none";
         boolean wallReached = false;
-        boolean lineDectected = false;
+        boolean side1Moved = false;
+        boolean line1Detected = false;
+        boolean beacon1Pressed = false;
+        boolean side2Moved = false;
+        boolean line2Detected = false;
+        boolean beacon2Pressed = false;
 
-        int lineLight = 50;                 //the value at which the line gives off light
+        int moveSideTimer = 0;
+        int moveSideTime = 2000;
+
+        int pressTimer = 0;
+        int pressTime = 1000;
+
+        double lineLight = 1;                 //the value at which the line gives off light
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
         frontRightMotor = hardwareMap.dcMotor.get("front right");
         backLeftMotor = hardwareMap.dcMotor.get("back left");
         backRightMotor = hardwareMap.dcMotor.get("back right");
+
         leftFlipper = hardwareMap.servo.get("left flipper");
         rightFlipper = hardwareMap.servo.get("right flipper");
 
+        leftArm = hardwareMap.servo.get("left arm");
+        holder1 = hardwareMap.servo.get("holder1");
+
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
-        Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, colorSensor);
-        Impulse i = new Impulse();
-        i.setCrow(crow);
+        shootMotor.setDirection(DcMotor.Direction.REVERSE);
+        shootMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, colorSensor);
+        //Impulse i = new Impulse();
+        //i.setCrow(crow);
 
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -121,17 +160,29 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        shootMotor.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftMotor.setMaxSpeed(maxSpeed);
+        frontRightMotor.setMaxSpeed(maxSpeed);
+        backLeftMotor.setMaxSpeed(maxSpeed);
+        backRightMotor.setMaxSpeed(maxSpeed);
+
+
 
         //sensor setup
-        colorSensor = hardwareMap.colorSensor.get("color sensor");
+        leftColor = hardwareMap.colorSensor.get("left color");
+        rightColor = hardwareMap.colorSensor.get("right color");
+        rightColor.setI2cAddress(I2cAddr.create8bit(0x4c)); //this makes it so that we can have 2 color sensors
         leftTouch = hardwareMap.touchSensor.get("left touch");
         rightTouch = hardwareMap.touchSensor.get("right touch");
         lineReader = hardwareMap.opticalDistanceSensor.get("ods");
 
-        colorSensor.enableLed(colorSensorLEDOn);//turn on the color sensor light when init
+        leftColor.enableLed(colorSensorLEDOn);  //turn on the left color sensor light when init
+        rightColor.enableLed(colorSensorLEDOn); //turn off the right color sensor light when init
         telemetry.addData("Status", "Initialized");//tell that everything is started
         telemetry.update();
+
+        //setting init servo pos
+        leftArm.setPosition(leftArmUp);
+        holder1.setPosition(holder1Down);
 
         waitForStart();
         runtime.reset();
@@ -141,35 +192,104 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Direction :", direction);
             telemetry.addData("Motor Speed: ", motorSpeed);
-            telemetry.addData("Spin Speed: ", spinSpeed);
-            telemetry.addData("Colors - ", "Red: " + colorSensor.red() + "Green: " + colorSensor.green() + "Blue: " + colorSensor.blue());
-            telemetry.addData("Color Sensed: ", colorSensed);
+            //telemetry.addData("Spin Speed: ", spinSpeed);
+            telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue() + leftColorSensed);
+            telemetry.addData("R color - ", "Red: " + rightColor.red() + "Green: " + rightColor.green() + "Blue: " + rightColor.blue() + rightColorSensed);
+            telemetry.addData("Color to press: ",  colorToPress);
             telemetry.addData("Flippers - ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
-            telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
-            telemetry.addData("Touch - ", "left: " + leftTouch.isPressed() + " right: " + rightTouch.isPressed());
+            //telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
+            //telemetry.addData("Touch - ", "left: " + leftTouch.isPressed() + " right: " + rightTouch.isPressed());
             telemetry.addData("ODS: ", lineReader.getRawLightDetected());
+            telemetry.addData("Encoders: ", "FL " + frontLeftMotor.getCurrentPosition() + " FR " + frontRightMotor.getCurrentPosition() + " BL " + backLeftMotor.getCurrentPosition() + " BR " + backRightMotor.getCurrentPosition());
+            //telemetry.addData("Shooting ", "Timer: " + shootTimer + " Pos: " + shootMotor.getCurrentPosition());
+            //telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
+            //telemetry.addData("Arms: ", "Left: " + leftArmOut);
+            //telemetry.addData("Holder1: ", holder1Out);
             telemetry.update();
 
 
             //autonomous logik
 
-            if (!leftTouch.isPressed() || !rightTouch.isPressed() || wallReached){
-                //direction = "right backwards";
-                colorToPress = "blue";
-            } else if (lineReader.getRawLightDetected() < lineLight || lineDectected ){
+            if ((!leftTouch.isPressed() && !rightTouch.isPressed()) && !wallReached){
+                if(SIDE_COLOR.equals("blue")){
+                    direction = "right forwards";
+                } else {
+                    direction = "right backwards";
+                }
+
+            } else if (moveSideTimer < moveSideTime && !side1Moved){
+
                 wallReached = true;
-                //direction = "backwards";
-            } else if (false){
-                direction = "stop";
+                motorSpeed = 0.25;
+                moveSideTimer++;
+
+                if(SIDE_COLOR.equals("blue")){
+                    direction = "backwards";
+                } else {
+                    direction = "forwards";
+                }
+            } else if (lineReader.getRawLightDetected() < lineLight && !line1Detected ){
+                motorSpeed = 0.25;
+                side1Moved = true;
+                if(SIDE_COLOR.equals("blue")){
+                    direction = "forwards";
+                } else {
+                    direction = "backwards";
+                }
+            } else if (pressTimer < pressTime && !beacon1Pressed) {
+                line1Detected = true;
+                colorToPress = SIDE_COLOR;
+                pressTimer++;
+                motorSpeed=0.1;
+                direction = "right";
+                moveSideTimer = 0;
+            } else if (moveSideTimer < moveSideTime && !side2Moved) {
+                colorToPress = "none";
+                beacon1Pressed = true;
+                moveSideTimer++;
+                pressTimer = 0;
+                motorSpeed = 0.25;
+                if(SIDE_COLOR.equals("blue")){
+                    direction = "forwards";
+                } else {
+                    direction = "backwards";
+                }
+            } else if (lineReader.getRawLightDetected() < lineLight && !line2Detected){
+                side2Moved = true;
+                if(SIDE_COLOR.equals("blue")){
+                    direction = "forwards";
+                } else {
+                    direction = "backwards";
+                }
+            } else if (pressTimer < pressTime && !beacon2Pressed) {
+                line2Detected = true;
+                colorToPress = SIDE_COLOR;
+                pressTimer++;
+                motorSpeed = 0.1;
+                direction = "right";
+                moveSideTimer = 0;
             } else {
+                colorToPress = "none";
+                beacon2Pressed = true;
                 direction = "stop";
+                motorSpeed = 0.25;
             }
 
 
-            if (colorSensor.red()> colorSensor.blue()){
-                colorSensed = "red";
-            } else if (colorSensor.blue() > colorSensor.red()){
-                colorSensed = "blue";
+            if (leftColor.red()> leftColor.blue()){
+                leftColorSensed = "red";
+            } else if (leftColor.blue() > leftColor.red()){
+                leftColorSensed = "blue";
+            } else {
+                leftColorSensed = "none";
+            }
+
+            if (rightColor.red()> rightColor.blue()){
+                rightColorSensed = "red";
+            } else if (rightColor.blue() > rightColor.red()){
+                rightColorSensed = "blue";
+            } else {
+                rightColorSensed = "none";
             }
 
             /*
@@ -182,16 +302,18 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             }
             */
 
-           if (colorSensed == "none" || colorToPress == "none"){
-               leftFlipperOut = false;
-               rightFlipperOut = false;
-           } else if (colorSensed == colorToPress){
-               leftFlipperOut = true;
-               rightFlipperOut = false;
-           } else {
-               leftFlipperOut = false;
-               rightFlipperOut = true;
-           }
+            if(leftColorSensed.equals("none") || colorToPress.equals("none")){
+                leftFlipperOut = false;
+            } else if (leftColorSensed.equals(colorToPress)){
+                leftFlipperOut = true;
+            }
+
+            if(rightColorSensed.equals("none") || colorToPress.equals("none")){
+                rightFlipperOut = false;
+            } else if (rightColorSensed.equals(colorToPress)){
+                rightFlipperOut = true;
+            }
+
 
 
             if(leftFlipperOut){
@@ -205,6 +327,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             } else {
                 rightFlipper.setPosition(rightFlipperBack);
             }
+
 
 
 

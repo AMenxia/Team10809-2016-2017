@@ -32,12 +32,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode;
 
-
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -45,10 +43,10 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@TeleOp(name = "Omnidirectional Drive", group = "Linear Opmode")
+@Autonomous(name = "Omnidirectional Drive Auto PUSH BALL", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
 //@Disabled
-public class Omnidirectional_Drive extends LinearOpMode {
+public class Omnidirectional_Drive_Auto_PUSH_BALL extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -61,7 +59,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
     Servo leftArm = null;
     Servo rightArm = null;
     Servo holder1 = null;
-    Servo holder2 = null;
 
     DcMotor shootMotor = null;
 
@@ -79,7 +76,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
         String direction = "stop";          //the direction the robot will be heading
-        double motorSpeed = 0.25;           //the power the motors will be set to
+        double motorSpeed = 0.5;           //the power the motors will be set to
         int maxSpeed = 2800;
         double spinSpeed = 0.25;            //the power the motors will be set to while spinning
         double ticksPerRev = 1120;          //the amount of encoder ticks per revolution of the wheel
@@ -104,13 +101,32 @@ public class Omnidirectional_Drive extends LinearOpMode {
         double leftArmDown = 0.2;           //position of the left arm when down
         boolean leftArmOut = false;         //if the left arm is out or not
 
-        double holder1Up = 1;                //position of the holder when up
+        double holderUp = 1;                //position of the holder when up
         double holder1Down = 0.5;            //position of the holder when down
         boolean holder1Out = false;          //if the holder is down or not
 
-        double holder2Up = 0.5;
-        double holder2Down = 1;
-        boolean holder2Out = false;
+
+
+        //auto variables
+        String leftColorSensed = "none";
+        String rightColorSensed = "none";
+        String SIDE_COLOR = "blue";
+        String colorToPress = "none";
+        boolean wallReached = false;
+        boolean side1Moved = false;
+        boolean line1Detected = false;
+        boolean beacon1Pressed = false;
+        boolean side2Moved = false;
+        boolean line2Detected = false;
+        boolean beacon2Pressed = false;
+
+        int moveSideTimer = 0;
+        int moveSideTime = 6000;
+
+        int pressTimer = 0;
+        int pressTime = 20000;
+
+        double lineLight = 1;                 //the value at which the line gives off light
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -123,7 +139,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
         leftArm = hardwareMap.servo.get("left arm");
         holder1 = hardwareMap.servo.get("holder1");
-        holder2 = hardwareMap.servo.get("holder2");
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
@@ -178,159 +193,102 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Direction :", direction);
             telemetry.addData("Motor Speed: ", motorSpeed);
             //telemetry.addData("Spin Speed: ", spinSpeed);
-            telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue());
-            telemetry.addData("R color - ", "Red: " + rightColor.red() + "Green: " + rightColor.green() + "Blue: " + rightColor.blue());
+            telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue() + leftColorSensed);
+            telemetry.addData("R color - ", "Red: " + rightColor.red() + "Green: " + rightColor.green() + "Blue: " + rightColor.blue() + rightColorSensed);
+            telemetry.addData("Color to press: ",  colorToPress);
             telemetry.addData("Flippers - ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
-            telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
-            telemetry.addData("Touch - ", "left: " + leftTouch.isPressed() + " right: " + rightTouch.isPressed());
+            //telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
+            //telemetry.addData("Touch - ", "left: " + leftTouch.isPressed() + " right: " + rightTouch.isPressed());
             telemetry.addData("ODS: ", lineReader.getRawLightDetected());
             telemetry.addData("Encoders: ", "FL " + frontLeftMotor.getCurrentPosition() + " FR " + frontRightMotor.getCurrentPosition() + " BL " + backLeftMotor.getCurrentPosition() + " BR " + backRightMotor.getCurrentPosition());
-            telemetry.addData("Shooting ", "Timer: " + shootTimer + " Pos: " + shootMotor.getCurrentPosition());
-            telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
-            telemetry.addData("Arms: ", "Left: " + leftArmOut);
-            telemetry.addData("Holders: ", "1: " + holder1Out + " 2: " + holder2Out);
+            //telemetry.addData("Shooting ", "Timer: " + shootTimer + " Pos: " + shootMotor.getCurrentPosition());
+            //telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
+            //telemetry.addData("Arms: ", "Left: " + leftArmOut);
+            //telemetry.addData("Holder1: ", holder1Out);
             telemetry.update();
 
 
-            //shooting
-            if (gamepad2.right_trigger > 0.25 || gamepad2.left_trigger > 0.25){
-                if(shootTimer == 0){
-                    shootTimer = 1;
-                }
+            //autonomous logik
 
-            }
-
-            if(shootTimer == 1){
-                shootMotor.setPower(shootSpeed);
-                //older2.setPosition(holder2Up);
-                //holder2Out = false;
-                if(shootMotor.getCurrentPosition() > shootMax){
-                    shootTimer = 2;
-                }
-            } else if(shootTimer == 2) {
-                shootMotor.setPower(-shootSpeed/10);
-                if(shootMotor.getCurrentPosition() < shootMin){
-                    shootTimer = 0;
-                }
+            if(pressTimer<pressTime && !buttonPressed1){
+                direction = "stop";
+                pressTimer++;
+            } else if(moveSideTimer<moveSideTime && !side1Moved){
+                buttonPressed1 = true;
+                direction = "forwards";
+                moveSideTimer++;
             } else {
-                shootMotor.setPower(0);
-                //holder2.setPosition(holder2Down);
-                //holder2Out = true;
+                side1Moved = true;
+                colorToPress = "none";
+                //beacon2Pressed = true;
+                direction = "stop";
+                motorSpeed = 0.25;
+            }
+
+
+            if (leftColor.red()> leftColor.blue()){
+                leftColorSensed = "red";
+            } else if (leftColor.blue() > leftColor.red()){
+                leftColorSensed = "blue";
+            } else {
+                leftColorSensed = "none";
+            }
+
+            if (rightColor.red()> rightColor.blue()){
+                rightColorSensed = "red";
+            } else if (rightColor.blue() > rightColor.red()){
+                rightColorSensed = "blue";
+            } else {
+                rightColorSensed = "none";
+            }
+
+            /*
+            if (gamepad2.x){
+                colorToPress = "blue";
+            } else if (gamepad2.b){
+                colorToPress = "red";
+            } else {
+                colorToPress = "none";
+            }
+            */
+
+            if(leftColorSensed.equals("none") || colorToPress.equals("none")){
+                leftFlipperOut = false;
+            } else if (leftColorSensed.equals(colorToPress)){
+                leftFlipperOut = true;
+            }
+
+            if(rightColorSensed.equals("none") || colorToPress.equals("none")){
+                rightFlipperOut = false;
+            } else if (rightColorSensed.equals(colorToPress)){
+                rightFlipperOut = true;
             }
 
 
 
-            //controlling the flippers
-            if (gamepad2.dpad_left) {
-                leftFlipperOut = true;
+            if(leftFlipperOut){
                 leftFlipper.setPosition(leftFlipperForward);
             } else {
-                leftFlipperOut = false;
                 leftFlipper.setPosition(leftFlipperBack);
             }
 
-            if (gamepad2.dpad_right) {
-                rightFlipperOut = true;
+            if(rightFlipperOut){
                 rightFlipper.setPosition(rightFlipperForward);
             } else {
-                rightFlipperOut = false;
                 rightFlipper.setPosition(rightFlipperBack);
             }
 
-            //controlling the arms
-            if(gamepad2.x){
-                if(leftArmOut){
-                    leftArmOut = false;
-                    leftArm.setPosition(leftArmUp);
-                } else {
-                    leftArmOut = true;
-                    leftArm.setPosition(leftArmDown);
-                }
-            }
-
-            //controlling the holders
-            if(gamepad2.a){
-                if(holder1Out){
-                    holder1Out = false;
-                    holder1.setPosition(holder1Up);
-                } else {
-                    holder1Out = true;
-                    holder1.setPosition(holder1Down);
-                }
-            }
-
-
-            if(gamepad2.b){
-                if(holder2Out){
-                    holder2Out = false;
-                    holder2.setPosition(holder2Up);
-                } else {
-                    holder2Out = true;
-                    holder2.setPosition(holder2Down);
-                }
-            }
 
 
 
-            //turning on and off the light on the color sensor
-            if (gamepad2.y && !buttonPressed1) {
-                buttonPressed1 = true;
-                colorSensorLEDOn = !colorSensorLEDOn;
-            } else if (!gamepad2.y) {
-                buttonPressed1 = false;
-            }
 
-            leftColor.enableLed(colorSensorLEDOn);
-            rightColor.enableLed(colorSensorLEDOn);
+
+
 
 
 
 
             ///------------------Movement code below------------------\\\
-
-            //modify motor speed based off of how far the joystick is being pushed
-            // (working) motorSpeed = Math.min(1,(Math.sqrt(Math.max(0, gamepad1.left_stick_x - 0.25) * Math.max(0, gamepad1.left_stick_x - 0.25) + Math.max(0, gamepad1.left_stick_y - 0.25) * Math.max(0, gamepad1.left_stick_y - 0.25)))/0.75);
-            motorSpeed = Math.max(0, Math.min(1,  ((Math.sqrt(Math.pow(gamepad1.left_stick_x, 2) + Math.pow(gamepad1.left_stick_y, 2)))-0.25)/0.75));
-            //(old) motorSpeed = Math.sqrt(gamepad1.left_stick_x*gamepad1.left_stick_x + gamepad1.left_stick_y*gamepad1.left_stick_y) - buffer;
-            spinSpeed = Math.max(0, Math.abs(gamepad1.right_stick_x) - buffer);
-
-            //set movement direction based off of stick
-            if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "left forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "left backwards";
-                } else {
-                    direction = "left";
-                }
-
-
-            } else if (gamepad1.left_stick_x > buffer) {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "right forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "right backwards";
-                } else {
-                    direction = "right";
-                }
-
-            } else {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "backwards";
-                } else {
-                    direction = "stop";
-                }
-
-            }
-
-            //making the robot spin
-            if (gamepad1.right_stick_x > buffer) {
-                direction = "clockwise";
-            } else if (gamepad1.right_stick_x < -buffer) {
-                direction = "counter clockwise";
-            }
 
 
             switch (direction) {//set the motors at different speeds based off of the directions
@@ -446,7 +404,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
 
             ///---------------End of Movement code--------------\\\
-            //sleep(100);
+
             idle(); // Always call idle() at the bottom of your while(opModeIsActive()) loop
         }
 
