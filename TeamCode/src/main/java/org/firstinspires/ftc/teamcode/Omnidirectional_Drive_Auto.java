@@ -56,9 +56,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
     DcMotor backRightMotor = null;
     Servo leftFlipper = null;
     Servo rightFlipper = null;
-    Servo leftArm = null;
-    Servo rightArm = null;
-    Servo holder1 = null;
 
     DcMotor shootMotor = null;
 
@@ -68,15 +65,13 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
     TouchSensor rightTouch;
     OpticalDistanceSensor lineReader;
 
-    Impulse i = new Impulse();
-
     @Override
     public void runOpMode() throws InterruptedException {
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
         String direction = "stop";          //the direction the robot will be heading
-        double motorSpeed = 0.5;           //the power the motors will be set to
+        double motorSpeed = 0.25;           //the power the motors will be set to
         int maxSpeed = 2800;
         double spinSpeed = 0.25;            //the power the motors will be set to while spinning
         double ticksPerRev = 1120;          //the amount of encoder ticks per revolution of the wheel
@@ -96,14 +91,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         double rightFlipperBack = 0.75;     //position of the right flipper when retracted
         double rightFlipperForward = 1.0;   //position of the right flipper when extended
         boolean rightFlipperOut = false;    //if the right flipper is out or not
-
-        double leftArmUp = 0.80;            //position of the left arm when up
-        double leftArmDown = 0.2;           //position of the left arm when down
-        boolean leftArmOut = false;         //if the left arm is out or not
-
-        double holderUp = 1;                //position of the holder when up
-        double holder1Down = 0.5;            //position of the holder when down
-        boolean holder1Out = false;          //if the holder is down or not
 
 
 
@@ -136,9 +123,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
         leftFlipper = hardwareMap.servo.get("left flipper");
         rightFlipper = hardwareMap.servo.get("right flipper");
-
-        leftArm = hardwareMap.servo.get("left arm");
-        holder1 = hardwareMap.servo.get("holder1");
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
@@ -180,9 +164,9 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         telemetry.addData("Status", "Initialized");//tell that everything is started
         telemetry.update();
 
-        //setting init servo pos
-        leftArm.setPosition(leftArmUp);
-        holder1.setPosition(holder1Down);
+        //intialize servo positions
+        leftFlipper.setPosition(leftFlipperBack);
+        rightFlipper.setPosition(rightFlipperBack);
 
         waitForStart();
         runtime.reset();
@@ -203,21 +187,19 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             telemetry.addData("Encoders: ", "FL " + frontLeftMotor.getCurrentPosition() + " FR " + frontRightMotor.getCurrentPosition() + " BL " + backLeftMotor.getCurrentPosition() + " BR " + backRightMotor.getCurrentPosition());
             //telemetry.addData("Shooting ", "Timer: " + shootTimer + " Pos: " + shootMotor.getCurrentPosition());
             //telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
-            //telemetry.addData("Arms: ", "Left: " + leftArmOut);
-            //telemetry.addData("Holder1: ", holder1Out);
             telemetry.update();
 
 
-            //autonomous logik
-
-            if ((!leftTouch.isPressed() && !rightTouch.isPressed()) && !wallReached){
-                if(SIDE_COLOR.equals("blue")){
+            ///-----------------------------autonomous logik---------------------\\\
+            if ((!leftTouch.isPressed() && !rightTouch.isPressed()) && !wallReached) {//moves diagonally untill a button is pressed
+                if (SIDE_COLOR.equals("blue")) {
                     direction = "right forwards";
                 } else {
                     direction = "right backwards";
                 }
-
-            } else if (moveSideTimer < moveSideTime && !side1Moved){
+            } else if(!leftTouch.isPressed() && !rightTouch.isPressed()){//always will move towards wall if a button is pressed
+                direction = "right";
+            } else if (moveSideTimer < moveSideTime && !side1Moved){//moves away from beacon for a set amount of frames
 
                 wallReached = true;
                 motorSpeed = 0.25;
@@ -228,7 +210,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     direction = "forwards";
                 }
-            } else if (lineReader.getRawLightDetected() < lineLight && !line1Detected ){
+            } else if (lineReader.getRawLightDetected() < lineLight && !line1Detected ){//moves towards beacons untill it sees the line
                 motorSpeed = 0.25;
                 side1Moved = true;
                 if(SIDE_COLOR.equals("blue")){
@@ -236,14 +218,14 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     direction = "backwards";
                 }
-            } else if (pressTimer < pressTime && !beacon1Pressed) {
+            } else if (pressTimer < pressTime && !beacon1Pressed) {//presses beacon color that it is supposed to  and moves towards wall
                 line1Detected = true;
                 colorToPress = SIDE_COLOR;
                 pressTimer++;
                 motorSpeed=0.1;
                 direction = "right";
                 moveSideTimer = 0;
-            } else if (moveSideTimer < moveSideTime && !side2Moved) {
+            } else if (moveSideTimer < moveSideTime && !side2Moved) {//moves towards other beacon for a set time to prevent line reader from activating too early
                 colorToPress = "none";
                 beacon1Pressed = true;
                 moveSideTimer++;
@@ -254,26 +236,29 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     direction = "backwards";
                 }
-            } else if (lineReader.getRawLightDetected() < lineLight && !line2Detected){
+            } else if (lineReader.getRawLightDetected() < lineLight && !line2Detected){//moves towards second beacon until line is read
                 side2Moved = true;
                 if(SIDE_COLOR.equals("blue")){
                     direction = "forwards";
                 } else {
                     direction = "backwards";
                 }
-            } else if (pressTimer < pressTime && !beacon2Pressed) {
+            } else if (pressTimer < pressTime && !beacon2Pressed) {//preses the color it is supposed to and moves towards wall
                 line2Detected = true;
                 colorToPress = SIDE_COLOR;
                 pressTimer++;
                 motorSpeed = 0.1;
                 direction = "right";
                 moveSideTimer = 0;
-            } else {
+            } else { //stops
                 colorToPress = "none";
                 beacon2Pressed = true;
                 direction = "stop";
                 motorSpeed = 0.25;
             }
+            ///------------------ end of autonomus logik --------------------------\\\
+
+
 
 
             if (leftColor.red()> leftColor.blue()){

@@ -58,10 +58,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
     DcMotor backRightMotor = null;
     Servo leftFlipper = null;
     Servo rightFlipper = null;
-    Servo leftArm = null;
-    Servo rightArm = null;
-    Servo holder1 = null;
-    Servo holder2 = null;
+    Servo loader = null;
 
     DcMotor shootMotor = null;
 
@@ -100,17 +97,9 @@ public class Omnidirectional_Drive extends LinearOpMode {
         double rightFlipperForward = 1.0;   //position of the right flipper when extended
         boolean rightFlipperOut = false;    //if the right flipper is out or not
 
-        double leftArmUp = 0.80;            //position of the left arm when up
-        double leftArmDown = 0.2;           //position of the left arm when down
-        boolean leftArmOut = false;         //if the left arm is out or not
-
-        double holder1Up = 1;                //position of the holder when up
-        double holder1Down = 0.5;            //position of the holder when down
-        boolean holder1Out = false;          //if the holder is down or not
-
-        double holder2Up = 0.5;
-        double holder2Down = 1;
-        boolean holder2Out = false;
+        double loaderDown = 0.5;            //position of the loader when retracted
+        double loaderUp = 0.0;              //position of the loader when hitting the ball
+        boolean loaderOut = false;          //if the loader is out or not
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -120,14 +109,11 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
         leftFlipper = hardwareMap.servo.get("left flipper");
         rightFlipper = hardwareMap.servo.get("right flipper");
-
-        leftArm = hardwareMap.servo.get("left arm");
-        holder1 = hardwareMap.servo.get("holder1");
-        holder2 = hardwareMap.servo.get("holder2");
+        loader = hardwareMap.servo.get("loader");
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
-        shootMotor.setDirection(DcMotor.Direction.REVERSE);
+        shootMotor.setDirection(DcMotor.Direction.FORWARD);
         shootMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -165,9 +151,10 @@ public class Omnidirectional_Drive extends LinearOpMode {
         telemetry.addData("Status", "Initialized");//tell that everything is started
         telemetry.update();
 
-        //setting init servo pos
-        leftArm.setPosition(leftArmUp);
-        holder1.setPosition(holder1Down);
+        //intialize servo positions
+        leftFlipper.setPosition(leftFlipperBack);
+        rightFlipper.setPosition(rightFlipperBack);
+        loader.setPosition(loaderDown);
 
         waitForStart();
         runtime.reset();
@@ -177,7 +164,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Direction :", direction);
             telemetry.addData("Motor Speed: ", motorSpeed);
-            //telemetry.addData("Spin Speed: ", spinSpeed);
+            telemetry.addData("Spin Speed: ", spinSpeed);
             telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue());
             telemetry.addData("R color - ", "Red: " + rightColor.red() + "Green: " + rightColor.green() + "Blue: " + rightColor.blue());
             telemetry.addData("Flippers - ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
@@ -187,89 +174,68 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Encoders: ", "FL " + frontLeftMotor.getCurrentPosition() + " FR " + frontRightMotor.getCurrentPosition() + " BL " + backLeftMotor.getCurrentPosition() + " BR " + backRightMotor.getCurrentPosition());
             telemetry.addData("Shooting ", "Timer: " + shootTimer + " Pos: " + shootMotor.getCurrentPosition());
             telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
-            telemetry.addData("Arms: ", "Left: " + leftArmOut);
-            telemetry.addData("Holders: ", "1: " + holder1Out + " 2: " + holder2Out);
             telemetry.update();
 
 
-            //shooting
-            if (gamepad2.right_trigger > 0.25 || gamepad2.left_trigger > 0.25){
-                if(shootTimer == 0){
-                    shootTimer = 1;
-                }
 
+            //auto shooting
+            if (gamepad2.x && shootTimer == 0){
+                shootTimer = 1;
+            } else if (shootTimer < 1000 && shootTimer != 0) {
+                shootMotor.setPower(shootSpeed);
+                shootTimer++;
+            } else if (shootTimer < 3000 && shootTimer != 0) {
+                shootMotor.setPower(0);
+                loaderOut = true;
+                shootTimer++;
+            } else if (shootTimer < 4000 && shootTimer != 0){
+                shootMotor.setPower(shootSpeed);
+                shootTimer++;
+            } else {
+                shootTimer = 0;
+                shootMotor.setPower(0);
+                loaderOut = false;
             }
 
-            if(shootTimer == 1){
-                shootMotor.setPower(shootSpeed);
-                //older2.setPosition(holder2Up);
-                //holder2Out = false;
-                if(shootMotor.getCurrentPosition() > shootMax){
-                    shootTimer = 2;
+            //shooting
+            if(shootTimer == 0) {
+                if (gamepad2.right_trigger > 0.25) {
+                    shootMotor.setPower(shootSpeed);
+                } else if (gamepad2.left_trigger > 0.25) {
+                    shootMotor.setPower(-shootSpeed / 10);
+                } else {
+                    shootMotor.setPower(0);
                 }
-            } else if(shootTimer == 2) {
-                shootMotor.setPower(-shootSpeed/10);
-                if(shootMotor.getCurrentPosition() < shootMin){
-                    shootTimer = 0;
-                }
-            } else {
-                shootMotor.setPower(0);
-                //holder2.setPosition(holder2Down);
-                //holder2Out = true;
             }
 
 
 
             //controlling the flippers
-            if (gamepad2.dpad_left) {
-                leftFlipperOut = true;
+            leftFlipperOut = gamepad2.dpad_left;
+            rightFlipperOut = gamepad2.dpad_right;
+
+            if (leftFlipperOut){//sets the position of the flippers
                 leftFlipper.setPosition(leftFlipperForward);
             } else {
-                leftFlipperOut = false;
                 leftFlipper.setPosition(leftFlipperBack);
             }
 
-            if (gamepad2.dpad_right) {
-                rightFlipperOut = true;
+            if (rightFlipperOut){
                 rightFlipper.setPosition(rightFlipperForward);
             } else {
-                rightFlipperOut = false;
                 rightFlipper.setPosition(rightFlipperBack);
             }
 
-            //controlling the arms
-            if(gamepad2.x){
-                if(leftArmOut){
-                    leftArmOut = false;
-                    leftArm.setPosition(leftArmUp);
-                } else {
-                    leftArmOut = true;
-                    leftArm.setPosition(leftArmDown);
-                }
+
+            //controlling the loader
+            if(shootTimer == 0) {
+                loaderOut = gamepad2.a; //maps loader position to A on gamepad2
             }
-
-            //controlling the holders
-            if(gamepad2.a){
-                if(holder1Out){
-                    holder1Out = false;
-                    holder1.setPosition(holder1Up);
-                } else {
-                    holder1Out = true;
-                    holder1.setPosition(holder1Down);
-                }
+            if(loaderOut){
+                loader.setPosition(loaderUp);
+            } else {
+                loader.setPosition(loaderDown);
             }
-
-
-            if(gamepad2.b){
-                if(holder2Out){
-                    holder2Out = false;
-                    holder2.setPosition(holder2Up);
-                } else {
-                    holder2Out = true;
-                    holder2.setPosition(holder2Down);
-                }
-            }
-
 
 
             //turning on and off the light on the color sensor
@@ -289,10 +255,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
             ///------------------Movement code below------------------\\\
 
             //modify motor speed based off of how far the joystick is being pushed
-            // (working) motorSpeed = Math.min(1,(Math.sqrt(Math.max(0, gamepad1.left_stick_x - 0.25) * Math.max(0, gamepad1.left_stick_x - 0.25) + Math.max(0, gamepad1.left_stick_y - 0.25) * Math.max(0, gamepad1.left_stick_y - 0.25)))/0.75);
             motorSpeed = Math.max(0, Math.min(1,  ((Math.sqrt(Math.pow(gamepad1.left_stick_x, 2) + Math.pow(gamepad1.left_stick_y, 2)))-0.25)/0.75));
-            //(old) motorSpeed = Math.sqrt(gamepad1.left_stick_x*gamepad1.left_stick_x + gamepad1.left_stick_y*gamepad1.left_stick_y) - buffer;
-            spinSpeed = Math.max(0, Math.abs(gamepad1.right_stick_x) - buffer);
+            spinSpeed = Math.max(0, Math.min(1, (Math.abs(gamepad1.right_stick_x) - buffer)/0.75));
 
             //set movement direction based off of stick
             if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
