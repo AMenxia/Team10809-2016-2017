@@ -219,7 +219,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
 
 
-            //shooting
+            //shooting manually
             if(shootTimer == 0) {
                 if (gamepad2.right_trigger > 0.25) {
                     shootMotor.setPower(shootSpeed);

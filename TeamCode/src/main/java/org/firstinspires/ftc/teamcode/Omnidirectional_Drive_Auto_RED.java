@@ -43,10 +43,10 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Omnidirectional Drive Auto", group = "Linear Opmode")
+@Autonomous(name = "Omnidirectional Drive Auto RED", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
 //@Disabled
-public class Omnidirectional_Drive_Auto extends LinearOpMode {
+public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -104,7 +104,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         //auto variables
         String leftColorSensed = "none";
         String rightColorSensed = "none";
-        String SIDE_COLOR = "blue";
+        String SIDE_COLOR = "red";
         String colorToPress = "none";
         boolean wallReached = false;
         boolean side1Moved = false;
