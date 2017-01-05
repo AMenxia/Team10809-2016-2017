@@ -83,11 +83,13 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
         int shootTimer = 0;                 //how long the gun has been shooting for
         double shootSpeed = 1;              //how fast the gun shoots at
-        int shootMax = 50;                  //the maximum position of the launcher
-        int shootMin = 10;                  //the minimum position of the launcher
+        int shootMax = 600;
+        int shootMin = 0;
+        int loadTimer = 0;
+        int loadTime = 2000;
 
         boolean colorSensorLEDOn = false;    //if the color sensor LED is on or not
-        boolean buttonPressed1 = false;     //if a,b,x, or y is pressed on gamepad1
+        boolean y2Pressed = false;           //if y has been pressed on gamepad 2
 
         double leftFlipperBack = 0.25;      //position of the left flipper when retracted
         double leftFlipperForward = 0.0;    //position of the left flipper when extended
@@ -181,21 +183,41 @@ public class Omnidirectional_Drive extends LinearOpMode {
             //auto shooting
             if (gamepad2.x && shootTimer == 0){
                 shootTimer = 1;
-            } else if (shootTimer < 1000 && shootTimer != 0) {
+            } else if (shootTimer == 1) {
                 shootMotor.setPower(shootSpeed);
-                shootTimer++;
-            } else if (shootTimer < 3000 && shootTimer != 0) {
-                shootMotor.setPower(0);
+                if (shootMotor.getCurrentPosition() > shootMax){
+                    shootTimer = 2;
+                }
+            } else if (shootTimer == 2) {
+                shootMotor.setPower(-shootSpeed*0.25);
+                if(shootMotor.getCurrentPosition() < shootMin){
+                    shootTimer = 3;
+                }
+            } else if (shootTimer == 3) {
                 loaderOut = true;
-                shootTimer++;
-            } else if (shootTimer < 4000 && shootTimer != 0){
+                shootMotor.setPower(0);
+                if (loadTimer > loadTime) {
+                    shootTimer = 4;
+                } else {
+                    loadTimer++;
+                }
+            } else if(shootTimer == 4) {
                 shootMotor.setPower(shootSpeed);
-                shootTimer++;
+                if (shootMotor.getCurrentPosition() > shootMax) {
+                    shootTimer = 5;
+                }
+            } else if (shootTimer == 5){
+                shootMotor.setPower(-shootSpeed*0.25);
+                if(shootMotor.getCurrentPosition() < shootMin){
+                    shootTimer = 6;
+                }
             } else {
                 shootTimer = 0;
-                shootMotor.setPower(0);
+                loadTimer = 0;
                 loaderOut = false;
             }
+
+
 
             //shooting
             if(shootTimer == 0) {
@@ -239,11 +261,11 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
 
             //turning on and off the light on the color sensor
-            if (gamepad2.y && !buttonPressed1) {
-                buttonPressed1 = true;
+            if (gamepad2.y && !y2Pressed) {
+                y2Pressed = true;
                 colorSensorLEDOn = !colorSensorLEDOn;
             } else if (!gamepad2.y) {
-                buttonPressed1 = false;
+                y2Pressed = false;
             }
 
             leftColor.enableLed(colorSensorLEDOn);
