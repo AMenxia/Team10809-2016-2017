@@ -37,7 +37,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -50,8 +49,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 //@Disabled
 public class Omnidirectional_Drive extends LinearOpMode {
 
-    /* Declare OpMode members. */
-    private ElapsedTime runtime = new ElapsedTime();
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
     DcMotor backLeftMotor = null;
@@ -59,16 +56,15 @@ public class Omnidirectional_Drive extends LinearOpMode {
     Servo leftFlipper = null;
     Servo rightFlipper = null;
     Servo loader = null;
-
     DcMotor shootMotor = null;
-
     ColorSensor leftColor;  // Hardware Device Object
     ColorSensor rightColor;
     TouchSensor leftTouch;
     TouchSensor rightTouch;
     OpticalDistanceSensor lineReader;
-
     Impulse i = new Impulse();
+    /* Declare OpMode members. */
+    private ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -119,9 +115,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
         shootMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, colorSensor);
-        //Impulse i = new Impulse();
-        //i.setCrow(crow);
+        Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, leftColor, rightColor);
+        i.setCrow(crow);
 
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -137,8 +132,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
         frontRightMotor.setMaxSpeed(maxSpeed);
         backLeftMotor.setMaxSpeed(maxSpeed);
         backRightMotor.setMaxSpeed(maxSpeed);
-
-
 
         //sensor setup
         leftColor = hardwareMap.colorSensor.get("left color");
@@ -179,18 +172,17 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.update();
 
 
-
             //auto shooting
-            if (gamepad2.x && shootTimer == 0){
+            if (gamepad2.x && shootTimer == 0) {
                 shootTimer = 1;
             } else if (shootTimer == 1) {
                 shootMotor.setPower(shootSpeed);
-                if (shootMotor.getCurrentPosition() > shootMax){
+                if (shootMotor.getCurrentPosition() > shootMax) {
                     shootTimer = 2;
                 }
             } else if (shootTimer == 2) {
-                shootMotor.setPower(-shootSpeed*0.25);
-                if(shootMotor.getCurrentPosition() < shootMin){
+                shootMotor.setPower(-shootSpeed * 0.25);
+                if (shootMotor.getCurrentPosition() < shootMin) {
                     shootTimer = 3;
                 }
             } else if (shootTimer == 3) {
@@ -201,14 +193,14 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 } else {
                     loadTimer++;
                 }
-            } else if(shootTimer == 4) {
+            } else if (shootTimer == 4) {
                 shootMotor.setPower(shootSpeed);
                 if (shootMotor.getCurrentPosition() > shootMax) {
                     shootTimer = 5;
                 }
-            } else if (shootTimer == 5){
-                shootMotor.setPower(-shootSpeed*0.25);
-                if(shootMotor.getCurrentPosition() < shootMin){
+            } else if (shootTimer == 5) {
+                shootMotor.setPower(-shootSpeed * 0.25);
+                if (shootMotor.getCurrentPosition() < shootMin) {
                     shootTimer = 6;
                 }
             } else {
@@ -218,9 +210,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
 
-
             //shooting manually
-            if(shootTimer == 0) {
+            if (shootTimer == 0) {
                 if (gamepad2.right_trigger > 0.25) {
                     shootMotor.setPower(shootSpeed);
                 } else if (gamepad2.left_trigger > 0.25) {
@@ -230,30 +221,27 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 }
             }
 
-
-
             //controlling the flippers
             leftFlipperOut = gamepad2.dpad_left;
             rightFlipperOut = gamepad2.dpad_right;
 
-            if (leftFlipperOut){//sets the position of the flippers
+            if (leftFlipperOut) {//sets the position of the flippers
                 leftFlipper.setPosition(leftFlipperForward);
             } else {
                 leftFlipper.setPosition(leftFlipperBack);
             }
 
-            if (rightFlipperOut){
+            if (rightFlipperOut) {
                 rightFlipper.setPosition(rightFlipperForward);
             } else {
                 rightFlipper.setPosition(rightFlipperBack);
             }
 
-
             //controlling the loader
-            if(shootTimer == 0) {
+            if (shootTimer == 0) {
                 loaderOut = gamepad2.a; //maps loader position to A on gamepad2
             }
-            if(loaderOut){
+            if (loaderOut) {
                 loader.setPosition(loaderUp);
             } else {
                 loader.setPosition(loaderDown);
@@ -271,14 +259,11 @@ public class Omnidirectional_Drive extends LinearOpMode {
             leftColor.enableLed(colorSensorLEDOn);
             rightColor.enableLed(colorSensorLEDOn);
 
-
-
-
             ///------------------Movement code below------------------\\\
 
             //modify motor speed based off of how far the joystick is being pushed
-            motorSpeed = Math.max(0, Math.min(1,  ((Math.sqrt(Math.pow(gamepad1.left_stick_x, 2) + Math.pow(gamepad1.left_stick_y, 2)))-0.25)/0.75));
-            spinSpeed = Math.max(0, Math.min(1, (Math.abs(gamepad1.right_stick_x) - buffer)/0.75));
+            motorSpeed = Math.max(0, Math.min(1, ((Math.sqrt(Math.pow(gamepad1.left_stick_x, 2) + Math.pow(gamepad1.left_stick_y, 2))) - 0.25) / 0.75));
+            spinSpeed = Math.max(0, Math.min(1, (Math.abs(gamepad1.right_stick_x) - buffer) / 0.75));
 
             //set movement direction based off of stick
             if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
