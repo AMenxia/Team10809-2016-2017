@@ -282,6 +282,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                         shootTimer = 6;
                     }
                 } else {
+                    shootMotor.setPower(0);
                     shooting = false;
                     loadTimer = 0;
                     loaderOut = false;
