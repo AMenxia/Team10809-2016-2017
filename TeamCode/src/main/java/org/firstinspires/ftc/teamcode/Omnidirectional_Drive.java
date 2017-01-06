@@ -430,6 +430,10 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
     }
 
+    public enum directionEnum {
+        STOP, LEFT_FORWARDS, LEFT_BACKWARDS, LEFT, RIGHT_FORWARDS, RIGHT_BACKWARDS, RIGHT, FORWARDS, BACKWARDS, CLOCKWISE, COUNTER_CLOCKWISE
+    }
+
 
 }
 
