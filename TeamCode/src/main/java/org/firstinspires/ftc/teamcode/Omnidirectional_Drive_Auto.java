@@ -48,8 +48,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 //@Disabled
 public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
-    /* Declare OpMode members. */
-    private ElapsedTime runtime = new ElapsedTime();
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
     DcMotor backLeftMotor = null;
@@ -57,14 +55,14 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
     Servo leftFlipper = null;
     Servo rightFlipper = null;
     Servo loader = null;
-
     DcMotor shootMotor = null;
-
     ColorSensor leftColor;  // Hardware Device Object
     ColorSensor rightColor;
     TouchSensor leftTouch;
     TouchSensor rightTouch;
     OpticalDistanceSensor lineReader;
+    /* Declare OpMode members. */
+    private ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -98,7 +96,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         double loaderDown = 0.5;            //position of the loader when retracted
         double loaderUp = 0.0;              //position of the loader when hitting the ball
         boolean loaderOut = false;          //if the loader is out or not
-
 
 
         //auto variables
@@ -160,7 +157,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         backRightMotor.setMaxSpeed(maxSpeed);
 
 
-
         //sensor setup
         leftColor = hardwareMap.colorSensor.get("left color");
         rightColor = hardwareMap.colorSensor.get("right color");
@@ -190,7 +186,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             //telemetry.addData("Spin Speed: ", spinSpeed);
             telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue() + leftColorSensed);
             telemetry.addData("R color - ", "Red: " + rightColor.red() + "Green: " + rightColor.green() + "Blue: " + rightColor.blue() + rightColorSensed);
-            telemetry.addData("Color to press: ",  colorToPress);
+            telemetry.addData("Color to press: ", colorToPress);
             telemetry.addData("Flippers - ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
             //telemetry.addData("ColorSensor LED: ", colorSensorLEDOn);
             //telemetry.addData("Touch - ", "left: " + leftTouch.isPressed() + " right: " + rightTouch.isPressed());
@@ -216,23 +212,23 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 motorSpeed = 0.1;
                 direction = "right";
                 */
-            } else if (moveSideTimer < moveSideTime && !side1Moved){//moves away from beacon for a set amount of frames
+            } else if (moveSideTimer < moveSideTime && !side1Moved) {//moves away from beacon for a set amount of frames
 
                 wallReached = true;
                 motorSpeed = 0.25;
                 moveSideTimer++;
 
-                if(SIDE_COLOR.equals("blue")){
+                if (SIDE_COLOR.equals("blue")) {
                     direction = "backwards";
                 } else {
                     direction = "forwards";
                 }
-            } else if (lineReader.getRawLightDetected() < lineLight && !line1Detected ){//moves towards beacons untill it sees the line
+            } else if (lineReader.getRawLightDetected() < lineLight && !line1Detected) {//moves towards beacons untill it sees the line
 
                 motorSpeed = 0.25;
                 side1Moved = true;
 
-                if(SIDE_COLOR.equals("blue")){
+                if (SIDE_COLOR.equals("blue")) {
                     direction = "forwards";
                 } else {
                     direction = "backwards";
@@ -251,19 +247,20 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                     shooting = true;
                     shootTimer = 1;
                 }
-            } else if (shooting){
+            } else if (shooting) {
 
                 direction = "stop";
                 colorToPress = "none";
+                beacon1Pressed = true;
                 //auto shooting
                 if (shootTimer == 1) {
                     shootMotor.setPower(shootSpeed);
-                    if (shootMotor.getCurrentPosition() > shootMax){
+                    if (shootMotor.getCurrentPosition() > shootMax) {
                         shootTimer = 2;
                     }
                 } else if (shootTimer == 2) {
-                    shootMotor.setPower(-shootSpeed*0.25);
-                    if(shootMotor.getCurrentPosition() < shootMin){
+                    shootMotor.setPower(-shootSpeed * 0.25);
+                    if (shootMotor.getCurrentPosition() < shootMin) {
                         shootTimer = 3;
                     }
                 } else if (shootTimer == 3) {
@@ -274,14 +271,14 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                     } else {
                         loadTimer++;
                     }
-                } else if(shootTimer == 4) {
+                } else if (shootTimer == 4) {
                     shootMotor.setPower(shootSpeed);
                     if (shootMotor.getCurrentPosition() > shootMax) {
                         shootTimer = 5;
                     }
-                } else if (shootTimer == 5){
-                    shootMotor.setPower(-shootSpeed*0.25);
-                    if(shootMotor.getCurrentPosition() < shootMin){
+                } else if (shootTimer == 5) {
+                    shootMotor.setPower(-shootSpeed * 0.25);
+                    if (shootMotor.getCurrentPosition() < shootMin) {
                         shootTimer = 6;
                     }
                 } else {
@@ -291,19 +288,18 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 }
             } else if (moveSideTimer < moveSideTime && !side2Moved) {//moves towards other beacon for a set time to prevent line reader from activating too early
                 colorToPress = "none";
-                beacon1Pressed = true;
                 moveSideTimer++;
                 pressTimer = 0;
                 motorSpeed = 0.5;
-                if(SIDE_COLOR.equals("blue")){
+                if (SIDE_COLOR.equals("blue")) {
                     direction = "forwards";
                 } else {
                     direction = "backwards";
                 }
-            } else if (lineReader.getRawLightDetected() < lineLight && !line2Detected){//moves towards second beacon until line is read
+            } else if (lineReader.getRawLightDetected() < lineLight && !line2Detected) {//moves towards second beacon until line is read
                 side2Moved = true;
                 motorSpeed = 0.25;
-                if(SIDE_COLOR.equals("blue")){
+                if (SIDE_COLOR.equals("blue")) {
                     direction = "forwards";
                 } else {
                     direction = "backwards";
@@ -311,7 +307,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             } else if (pressTimer < pressTime && !beacon2Pressed) {//preses the color it is supposed to and moves towards wall
                 line2Detected = true;
                 moveSideTimer = 0;
-                if(!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
+                if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
                     motorSpeed = 0.1;
                     direction = "right";
                     colorToPress = "none";
@@ -329,19 +325,17 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             ///------------------ end of autonomus logik --------------------------\\\
 
 
-
-
-            if (leftColor.red()> leftColor.blue()){
+            if (leftColor.red() > leftColor.blue()) {
                 leftColorSensed = "red";
-            } else if (leftColor.blue() > leftColor.red()){
+            } else if (leftColor.blue() > leftColor.red()) {
                 leftColorSensed = "blue";
             } else {
                 leftColorSensed = "none";
             }
 
-            if (rightColor.red()> rightColor.blue()){
+            if (rightColor.red() > rightColor.blue()) {
                 rightColorSensed = "red";
-            } else if (rightColor.blue() > rightColor.red()){
+            } else if (rightColor.blue() > rightColor.red()) {
                 rightColorSensed = "blue";
             } else {
                 rightColorSensed = "none";
@@ -357,49 +351,40 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             }
             */
 
-            if(leftColorSensed.equals("none") || colorToPress.equals("none")){
+            if (leftColorSensed.equals("none") || colorToPress.equals("none")) {
                 leftFlipperOut = false;
-            } else if (leftColorSensed.equals(colorToPress)){
+            } else if (leftColorSensed.equals(colorToPress)) {
                 leftFlipperOut = true;
             }
 
-            if(rightColorSensed.equals("none") || colorToPress.equals("none")){
+            if (rightColorSensed.equals("none") || colorToPress.equals("none")) {
                 rightFlipperOut = false;
-            } else if (rightColorSensed.equals(colorToPress)){
+            } else if (rightColorSensed.equals(colorToPress)) {
                 rightFlipperOut = true;
             }
 
 
-
-            if(leftFlipperOut){
+            if (leftFlipperOut) {
                 leftFlipper.setPosition(leftFlipperForward);
             } else {
                 leftFlipper.setPosition(leftFlipperBack);
             }
 
-            if(rightFlipperOut){
+            if (rightFlipperOut) {
                 rightFlipper.setPosition(rightFlipperForward);
             } else {
                 rightFlipper.setPosition(rightFlipperBack);
             }
 
             //controlling the loader
-            if(shootTimer == 0) {
+            if (shootTimer == 0) {
                 loaderOut = gamepad2.a; //maps loader position to A on gamepad2
             }
-            if(loaderOut){
+            if (loaderOut) {
                 loader.setPosition(loaderUp);
             } else {
                 loader.setPosition(loaderDown);
             }
-
-
-
-
-
-
-
-
 
 
             ///------------------Movement code below------------------\\\
@@ -530,9 +515,4 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
 
     }
-
-
 }
-
-
-
