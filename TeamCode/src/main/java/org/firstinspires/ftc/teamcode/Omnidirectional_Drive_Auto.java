@@ -111,13 +111,14 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         boolean side2Moved = false;
         boolean line2Detected = false;
         boolean beacon2Pressed = false;
+        boolean isTeamColor = false;
 
 
         int moveSideTimer = 0;
         int moveSideTime = 2000;
 
-        int pressTimer = 0;
-        int pressTime = 1000;
+        int pushTimer = 0;
+        int pushTime = 3000;
 
         double lineLight = 1;                 //the value at which the line gives off light
 
@@ -233,7 +234,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     direction = "backwards";
                 }
-            } else if (pressTimer < pressTime && !beacon1Pressed) {//presses beacon color that it is supposed to  and moves towards wall
+            } else if (!isTeamColor && !beacon1Pressed && pushTimer < pushTime) {//presses beacon color that it is supposed to  and moves towards wall
                 line1Detected = true;
                 moveSideTimer = 0;
                 if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
@@ -242,16 +243,17 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                     colorToPress = "none";
                 } else {
                     colorToPress = SIDE_COLOR;
-                    pressTimer++;
                     direction = "stop";
                     shooting = true;
                     shootTimer = 1;
+                    pushTimer++;
                 }
             } else if (shooting) {
 
                 direction = "stop";
                 colorToPress = "none";
                 beacon1Pressed = true;
+                pushTimer = 0;
                 //auto shooting
                 if (shootTimer == 1) {
                     shootMotor.setPower(shootSpeed);
@@ -290,7 +292,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             } else if (moveSideTimer < moveSideTime && !side2Moved) {//moves towards other beacon for a set time to prevent line reader from activating too early
                 colorToPress = "none";
                 moveSideTimer++;
-                pressTimer = 0;
                 motorSpeed = 0.5;
                 if (SIDE_COLOR.equals("blue")) {
                     direction = "forwards";
@@ -305,7 +306,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     direction = "backwards";
                 }
-            } else if (pressTimer < pressTime && !beacon2Pressed) {//preses the color it is supposed to and moves towards wall
+            } else if (!isTeamColor && !beacon2Pressed && pushTimer < pushTime) {//preses the color it is supposed to and moves towards wall
                 line2Detected = true;
                 moveSideTimer = 0;
                 if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
@@ -315,9 +316,10 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     colorToPress = SIDE_COLOR;
                     direction = "stop";
-                    pressTimer++;
+                    pushTimer++;
                 }
             } else { //stops
+                pushTimer = 0;
                 colorToPress = "none";
                 beacon2Pressed = true;
                 direction = "stop";
@@ -362,6 +364,16 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 rightFlipperOut = false;
             } else if (rightColorSensed.equals(colorToPress)) {
                 rightFlipperOut = true;
+            }
+
+            if (!rightColorSensed.equals("none") && !leftColorSensed.equals("none") && !colorToPress.equals("none")) {
+                if (rightColorSensed.equals(colorToPress) && leftColorSensed.equals(colorToPress)) {
+                    leftFlipperOut = false;
+                    rightFlipperOut = false;
+                    isTeamColor = true;
+                }
+            } else {
+                isTeamColor = false;
             }
 
 
