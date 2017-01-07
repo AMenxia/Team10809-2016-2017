@@ -115,8 +115,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
         shootMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, leftColor, rightColor);
-        i.setCrow(crow);
+        //Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, leftColor, rightColor);
+        //i.setCrow(crow);
 
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
