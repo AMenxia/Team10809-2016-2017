@@ -33,10 +33,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.teamcode;
 
 
+import android.media.MediaPlayer;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -48,6 +51,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 // @Autonomous(...) is the other common choice
 //@Disabled
 public class Omnidirectional_Drive extends LinearOpMode {
+
+    MediaPlayer crow1;
+    MediaPlayer crow2;
+    MediaPlayer crow3;
 
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
@@ -68,6 +75,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+        MediaPlayer crow1 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow1);
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -171,6 +180,9 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
             telemetry.update();
 
+            if(Math.rint(Math.random()*100000) == 1){
+                crow1.start();
+            }
 
             //auto shooting
             if (gamepad2.x && shootTimer == 0) {

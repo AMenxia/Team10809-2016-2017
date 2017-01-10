@@ -32,10 +32,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode;
 
+import android.media.MediaPlayer;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -47,6 +50,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 // @Autonomous(...) is the other common choice
 //@Disabled
 public class Omnidirectional_Drive_Auto extends LinearOpMode {
+
+    MediaPlayer spidersclaw;
 
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
@@ -66,6 +71,8 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+        MediaPlayer spidersclaw = MediaPlayer.create(hardwareMap.appContext,R.raw.spidersclaw);
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -101,7 +108,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         //auto variables
         String leftColorSensed = "none";
         String rightColorSensed = "none";
-        String SIDE_COLOR = "blue";
+        String SIDE_COLOR = "blue"; // <======================================================================
         String colorToPress = "none";
         boolean wallReached = false;
         boolean side1Moved = false;
@@ -115,12 +122,12 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
 
         int moveSideTimer = 0;
-        int moveSideTime = 2000;
+        int moveSideTime = 1000;
 
         int pushCycle = 0;
         int maxPushes = 3;
         int pushTimer = 0;
-        int pushTime = 3000;
+        int pushTime = 750;
 
         double lineLight = 1;                 //the value at which the line gives off light
 
@@ -200,15 +207,17 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             telemetry.update();
 
 
+            spidersclaw.start();
+
             ///-----------------------------autonomous logik---------------------\\\
             if ((!leftTouch.isPressed() && !rightTouch.isPressed()) && !wallReached) {//moves diagonally untill a button is pressed
 
-                motorSpeed = 0.5;
+                motorSpeed = 0.8;
 
                 if (SIDE_COLOR.equals("blue")) {
-                    direction = "right forwards";
+                    direction = "left forwards";
                 } else {
-                    direction = "right backwards";
+                    direction = "right forwards";
                 }
                 /*
             } else if(!leftTouch.isPressed() || !rightTouch.isPressed()){//always will move towards wall if a button is pressed
@@ -218,13 +227,13 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             } else if (moveSideTimer < moveSideTime && !side1Moved) {//moves away from beacon for a set amount of frames
 
                 wallReached = true;
-                motorSpeed = 0.25;
+                motorSpeed = 0.5;
                 moveSideTimer++;
 
                 if (SIDE_COLOR.equals("blue")) {
-                    direction = "backwards";
+                    direction = "right";
                 } else {
-                    direction = "forwards";
+                    direction = "left";
                 }
             } else if (lineReader.getRawLightDetected() < lineLight && !line1Detected) {//moves towards beacons untill it sees the line
 
@@ -232,16 +241,16 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 side1Moved = true;
 
                 if (SIDE_COLOR.equals("blue")) {
-                    direction = "forwards";
+                    direction = "left";
                 } else {
-                    direction = "backwards";
+                    direction = "right";
                 }
-            } else if (!isTeamColor && !beacon1Pressed && pushTimer < pushTime ) {//presses beacon color that it is supposed to  and moves towards wall
+            } else if (!isTeamColor && !beacon1Pressed && pushTimer < pushTime && pushCycle%2 == 0 && pushCycle < 2*maxPushes) {//presses beacon color that it is supposed to  and moves towards wall
                 line1Detected = true;
                 moveSideTimer = 0;
                 if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
                     motorSpeed = 0.1;
-                    direction = "right";
+                    direction = "forwards";
                     colorToPress = "none";
                 } else {
                     colorToPress = SIDE_COLOR;
@@ -249,7 +258,23 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                     shootTimer = 1;
                     pushTimer++;
                 }
-            } else if((isTeamColor || pushTimer >= pushTime) && !beacon1Pressed){
+            } else if (!isTeamColor && !beacon1Pressed && pushTimer < pushTime && pushCycle%2 == 1 && pushCycle < 2*maxPushes) {//going backwards
+                line1Detected = true;
+                moveSideTimer = 0;
+                if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
+                    motorSpeed = 0.1;
+                    direction = "forwards";
+                    colorToPress = "none";
+                } else {
+                    colorToPress = "none";
+                    direction = "stop";
+                    shootTimer = 1;
+                    pushTimer++;
+                }
+            } else if(!isTeamColor && !beacon1Pressed && pushTimer >= pushTime){
+                pushTimer = 0;
+                pushCycle++;
+            } else if((isTeamColor || pushCycle >= 2*maxPushes) && !beacon1Pressed){
                 beacon1Pressed = true;
                 shooting = true;
             } else if (shooting) {
@@ -296,32 +321,51 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             } else if (moveSideTimer < moveSideTime && !side2Moved) {//moves towards other beacon for a set time to prevent line reader from activating too early
                 colorToPress = "none";
                 moveSideTimer++;
-                motorSpeed = 0.5;
+                motorSpeed = 0.75;
                 if (SIDE_COLOR.equals("blue")) {
-                    direction = "forwards";
+                    direction = "left";
                 } else {
-                    direction = "backwards";
+                    direction = "right";
                 }
             } else if (lineReader.getRawLightDetected() < lineLight && !line2Detected) {//moves towards second beacon until line is read
                 side2Moved = true;
                 motorSpeed = 0.25;
                 if (SIDE_COLOR.equals("blue")) {
-                    direction = "forwards";
+                    direction = "left";
                 } else {
-                    direction = "backwards";
+                    direction = "right";
                 }
-            } else if (!isTeamColor && !beacon2Pressed && pushTimer < pushTime) {//preses the color it is supposed to and moves towards wall
+            } else if (!isTeamColor && !beacon2Pressed && pushTimer < pushTime && pushCycle%2 == 0 && pushCycle < 2*maxPushes) {//presses beacon color that it is supposed to  and moves towards wall
                 line2Detected = true;
                 moveSideTimer = 0;
                 if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
                     motorSpeed = 0.1;
-                    direction = "right";
+                    direction = "forwards";
                     colorToPress = "none";
                 } else {
                     colorToPress = SIDE_COLOR;
                     direction = "stop";
+                    shootTimer = 1;
                     pushTimer++;
                 }
+            } else if (!isTeamColor && !beacon2Pressed && pushTimer < pushTime && pushCycle%2 == 1 && pushCycle < 2*maxPushes) {//going backwards
+                line1Detected = true;
+                moveSideTimer = 0;
+                if (!leftTouch.isPressed() || !rightTouch.isPressed()) {//always will move towards wall if a button is pressed
+                    motorSpeed = 0.1;
+                    direction = "forwards";
+                    colorToPress = "none";
+                } else {
+                    colorToPress = "none";
+                    direction = "stop";
+                    shootTimer = 1;
+                    pushTimer++;
+                }
+            } else if(!isTeamColor && !beacon2Pressed && pushTimer >= pushTime){
+                pushTimer = 0;
+                pushCycle++;
+            } else if((isTeamColor || pushCycle >= 2*maxPushes) && !beacon1Pressed){
+                beacon2Pressed = true;
             } else { //stops
                 pushTimer = 0;
                 colorToPress = "none";
