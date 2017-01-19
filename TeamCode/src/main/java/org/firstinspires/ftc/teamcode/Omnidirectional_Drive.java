@@ -120,7 +120,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
 
-        shootMotor.setDirection(DcMotor.Direction.FORWARD);
+        shootMotor.setDirection(DcMotor.Direction.REVERSE);
         shootMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
