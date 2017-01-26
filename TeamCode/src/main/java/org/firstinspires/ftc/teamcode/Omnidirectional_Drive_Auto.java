@@ -422,9 +422,9 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 motorSpeed = 0.8;
                 parkTimer++;
                 if (SIDE_COLOR.equals("blue")) {
-                    direction = "right";
+                    direction = "right forwards";
                 } else {
-                    direction = "left";
+                    direction = "left forwards";
                 }
 
             } else { //stops
