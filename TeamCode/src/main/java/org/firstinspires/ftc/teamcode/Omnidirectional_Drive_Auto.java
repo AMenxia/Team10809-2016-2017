@@ -110,7 +110,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         String rightColorSensed = "none";
 
         String SIDE_COLOR = "blue"; // <======================================================================
-        String PARK_LOCATION = "center"; //options are center, ramp, none
+        String PARK_LOCATION = "ramp"; //options are center, ramp, none
         String colorToPress = "none";
 
         boolean wallReached = false;
@@ -405,8 +405,17 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 motorSpeed = 0.8;
                 backUpTimer++;
                 direction = "backwards";
-            } else if (parkTimer < parkRampTime && !parked && PARK_LOCATION.equals("ramp")) {
+            } else if (turnTimer < turnTime && !turned && PARK_LOCATION.equals("ramp")) {
                 backedUp = true;
+                turnTimer++;
+                motorSpeed = 0.25;
+                if (SIDE_COLOR.equals("blue")) {
+                    direction = "clockwise";
+                } else {
+                    direction = "counter clockwise";
+                }
+            } else if (parkTimer < parkRampTime && !parked && PARK_LOCATION.equals("ramp")) {
+                turned = true;
                 motorSpeed = 0.8;
                 parkTimer++;
                 if (SIDE_COLOR.equals("blue")) {
