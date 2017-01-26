@@ -416,6 +416,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
                 } else {
                     direction = "left";
                 }
+
             } else { //stops
                 beacon2Pressed = true;
                 parked = true;

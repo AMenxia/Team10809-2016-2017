@@ -76,7 +76,10 @@ public class Omnidirectional_Drive extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        MediaPlayer crow1 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow1);
+        crow1 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow1);
+        crow2 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow2);
+        crow3 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow3);
+        double crowRandomnessMultiplier = 1000000;
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -180,11 +183,16 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
             telemetry.update();
 
-            if(Math.rint(Math.random()*100000) == 1){
+            if(Math.rint(Math.random()*crowRandomnessMultiplier) == 1){
                 crow1.start();
+            } else if(Math.rint(Math.random()*crowRandomnessMultiplier) == 2){
+                crow2.start();
+            } else if(Math.rint(Math.random()*crowRandomnessMultiplier) == 3){
+                crow3.start();
             }
 
             //auto shooting
+            /*
             if (gamepad2.x && shootTimer == 0 && false) {
                 shootTimer = 1;
             } else if (shootTimer == 1) {
@@ -220,7 +228,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 loadTimer = 0;
                 loaderOut = false;
             }
-
+            */
 
             //shooting manually
             if (shootTimer == 0) {
@@ -442,9 +450,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
     }
 
-    public enum directionEnum {
-        STOP, LEFT_FORWARDS, LEFT_BACKWARDS, LEFT, RIGHT_FORWARDS, RIGHT_BACKWARDS, RIGHT, FORWARDS, BACKWARDS, CLOCKWISE, COUNTER_CLOCKWISE
-    }
+
 
 
 }
