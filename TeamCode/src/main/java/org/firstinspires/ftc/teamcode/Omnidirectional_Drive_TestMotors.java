@@ -43,15 +43,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 //@Disabled
 public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
 
-    /* Declare OpMode members. */
-    private ElapsedTime runtime = new ElapsedTime();
-
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
     DcMotor backLeftMotor = null;
     DcMotor backRightMotor = null;
-
     Impulse i = new Impulse();
+    /* Declare OpMode members. */
+    private ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -62,7 +60,7 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
         //variable setup
         String direction = "stop";  //the direction the robot will be heading
         double motorSpeed = 0.25;   //the power the motors will be set to
-        
+
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
         frontRightMotor = hardwareMap.dcMotor.get("front right");
@@ -73,7 +71,6 @@ public class Omnidirectional_Drive_TestMotors extends LinearOpMode {
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
-
 
         waitForStart();
         runtime.reset();
