@@ -73,6 +73,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         MediaPlayer spidersclaw = MediaPlayer.create(hardwareMap.appContext,R.raw.spidersclaw);
+        int songSelection  = 0;
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -205,6 +206,8 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+
+        songSelection = (int)(Math.random()*4.0);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
