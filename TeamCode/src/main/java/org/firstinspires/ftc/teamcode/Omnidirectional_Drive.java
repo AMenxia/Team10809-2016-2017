@@ -185,7 +185,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
             //auto shooting
-            if (gamepad2.x && shootTimer == 0) {
+            if (gamepad2.x && shootTimer == 0 && false) {
                 shootTimer = 1;
             } else if (shootTimer == 1) {
                 shootMotor.setPower(shootSpeed);
