@@ -71,7 +71,8 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        MediaPlayer spidersclaw = MediaPlayer.create(hardwareMap.appContext, R.raw.spidersclaw);
+        MediaPlayer spidersclaw = MediaPlayer.create(hardwareMap.appContext,R.raw.spidersclaw);
+        int songSelection  = 0;
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -137,13 +138,13 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
 
         int parkTimer = 0;
         int parkCenterTime = 5000;
-        int parkRampTime = 5000;
+        int parkRampTime = 6000;
 
         int backUpTimer = 0;
         int backUpTime = 500;
 
         int turnTimer = 0;
-        int turnTime = 250;
+        int turnTime = 1500;
 
         double lineLight = 1;                 //the value at which the line gives off light
 
@@ -203,6 +204,8 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+
+        songSelection = (int)(Math.random()*4.0);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {

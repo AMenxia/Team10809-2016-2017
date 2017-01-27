@@ -138,13 +138,13 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
 
         int parkTimer = 0;
         int parkCenterTime = 5000;
-        int parkRampTime = 5000;
+        int parkRampTime = 6000;
 
         int backUpTimer = 0;
         int backUpTime = 500;
 
         int turnTimer = 0;
-        int turnTime = 250;
+        int turnTime = 1500;
 
         double lineLight = 1;                 //the value at which the line gives off light
 
