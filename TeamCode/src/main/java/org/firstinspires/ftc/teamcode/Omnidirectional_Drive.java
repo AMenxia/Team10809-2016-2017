@@ -241,8 +241,15 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
             //controlling the flippers
-            leftFlipperOut = gamepad2.dpad_left;
-            rightFlipperOut = gamepad2.dpad_right;
+            if(gamepad1.dpad_up || gamepad2.dpad_up){
+                leftFlipperOut = true;
+                rightFlipperOut = true;
+            } else {
+                leftFlipperOut = gamepad1.dpad_left || gamepad2.dpad_left;
+                rightFlipperOut = gamepad1.dpad_right || gamepad2.dpad_right;
+            }
+
+
 
             if (leftFlipperOut) {//sets the position of the flippers
                 leftFlipper.setPosition(leftFlipperForward);

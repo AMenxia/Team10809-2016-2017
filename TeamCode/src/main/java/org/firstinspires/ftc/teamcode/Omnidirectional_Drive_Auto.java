@@ -225,7 +225,6 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
             //telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
             telemetry.update();
 
-
             spidersclaw.start();
 
             ///-----------------------------autonomous logik---------------------\\\
