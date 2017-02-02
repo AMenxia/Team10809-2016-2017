@@ -51,6 +51,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
 
     MediaPlayer spidersclaw;
+    MediaPlayer kahoot1;
+    MediaPlayer kahoot2;
+    MediaPlayer kahoot3;
+
 
     DcMotor frontLeftMotor = null;
     DcMotor frontRightMotor = null;
@@ -72,7 +76,11 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         MediaPlayer spidersclaw = MediaPlayer.create(hardwareMap.appContext,R.raw.spidersclaw);
-        int songSelection  = 0;
+        MediaPlayer kahoot1 = MediaPlayer.create(hardwareMap.appContext,R.raw.kahoot1);
+        MediaPlayer kahoot2 = MediaPlayer.create(hardwareMap.appContext,R.raw.kahoot2);
+        MediaPlayer kahoot3 = MediaPlayer.create(hardwareMap.appContext,R.raw.kahoot3);
+        double songSelection  = 0;
+        int songCount = 4;
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -137,14 +145,14 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
         int pushTime = 750;
 
         int parkTimer = 0;
-        int parkCenterTime = 5000;
-        int parkRampTime = 6000;
+        int parkCenterTime = 6000;
+        int parkRampTime = 8000;
 
         int backUpTimer = 0;
-        int backUpTime = 500;
+        int backUpTime = 1000;
 
         int turnTimer = 0;
-        int turnTime = 1500;
+        int turnTime = 2000;
 
         double lineLight = 1;                 //the value at which the line gives off light
 
@@ -205,12 +213,23 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        songSelection = (int)(Math.random()*4.0);
+        songSelection = (int)(Math.random()*4.0 + 0.5);
+        if(songSelection == 1){
+            spidersclaw.start();
+        } else if (songSelection == 2){
+            kahoot1.start();
+        } else if (songSelection == 3){
+            kahoot2.start();
+        } else if (songSelection == 4){
+            kahoot3.start();
+        }
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Direction :", direction);
+            telemetry.addData("Song Selection: ", songSelection);
+            telemetry.addData("Goals: " , "Side-" + SIDE_COLOR + " Target-" + PARK_LOCATION);
             //telemetry.addData("Motor Speed: ", motorSpeed);
             //telemetry.addData("Spin Speed: ", spinSpeed);
             telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue() + leftColorSensed);
@@ -226,7 +245,7 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
             telemetry.update();
 
 
-            spidersclaw.start();
+
 
             ///-----------------------------autonomous logik---------------------\\\
             if ((!leftTouch.isPressed() && !rightTouch.isPressed()) && !wallReached) {//moves diagonally untill a button is pressed
@@ -622,6 +641,7 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
         frontRightMotor.setPower(0);
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
+
 
 
     }

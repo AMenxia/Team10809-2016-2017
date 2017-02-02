@@ -79,6 +79,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
         crow2 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow2);
         crow3 = MediaPlayer.create(hardwareMap.appContext, R.raw.crow3);
         double crowRandomnessMultiplier = 1000000;
+        double crowSelection = 0;
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
@@ -182,11 +183,13 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
             telemetry.update();
 
-            if(Math.rint(Math.random()*crowRandomnessMultiplier) == 1){
+
+            crowSelection =  Math.rint(Math.random()*crowRandomnessMultiplier);
+            if(crowSelection == 1){
                 crow1.start();
-            } else if(Math.rint(Math.random()*crowRandomnessMultiplier) == 2){
+            } else if(crowSelection == 2){
                 crow2.start();
-            } else if(Math.rint(Math.random()*crowRandomnessMultiplier) == 3){
+            } else if(crowSelection == 3){
                 crow3.start();
             }
 
