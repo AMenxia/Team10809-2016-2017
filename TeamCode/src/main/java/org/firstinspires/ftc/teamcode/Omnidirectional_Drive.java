@@ -83,6 +83,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
 
         //variable setup
         double buffer = 0.25;               //how far the joystick must move before moving the motors
+        boolean joystickControl = true;     //whether or not the joystick is controlling the motors
         String direction = "stop";          //the direction the robot will be heading
         double motorSpeed = 0.25;           //the power the motors will be set to
         int maxSpeed = 2800;
@@ -110,6 +111,18 @@ public class Omnidirectional_Drive extends LinearOpMode {
         double loaderDown = 0.5;            //position of the loader when retracted
         double loaderUp = 0.0;              //position of the loader when hitting the ball
         boolean loaderOut = false;          //if the loader is out or not
+
+        //90 deg turn stuff
+        double wheelDiameter = 3;
+        double robotDiameter = 20;
+        double wheelCircumference = (Math.PI)*(wheelDiameter);
+        double turnCircumference = (Math.PI)*(robotDiameter);
+        Boolean quarterTurnRightFlag = false;
+        Boolean quarterTurnLeftFlag = false;
+        double initialRotation = 0;
+        double finalRotation = 0;
+        double distanceToTravel = turnCircumference/4;
+        double wheelRotations = distanceToTravel/wheelCircumference;
 
         //motor setup
         frontLeftMotor = hardwareMap.dcMotor.get("front left");
@@ -169,7 +182,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Direction :", direction);
+            telemetry.addData("Direction :", direction + " Joystick Control: " + joystickControl);
             telemetry.addData("Motor Speed: ", motorSpeed);
             telemetry.addData("Spin Speed: ", spinSpeed);
             telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue());
@@ -184,12 +197,12 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.update();
 
 
-            crowSelection =  Math.rint(Math.random()*crowRandomnessMultiplier);
-            if(crowSelection == 1){
+            crowSelection = Math.rint(Math.random() * crowRandomnessMultiplier);
+            if (crowSelection == 1) {
                 crow1.start();
-            } else if(crowSelection == 2){
+            } else if (crowSelection == 2) {
                 crow2.start();
-            } else if(crowSelection == 3){
+            } else if (crowSelection == 3) {
                 crow3.start();
             }
 
@@ -244,14 +257,13 @@ public class Omnidirectional_Drive extends LinearOpMode {
             }
 
             //controlling the flippers
-            if(gamepad1.dpad_up || gamepad2.dpad_up){
+            if (gamepad1.dpad_up || gamepad2.dpad_up) {
                 leftFlipperOut = true;
                 rightFlipperOut = true;
             } else {
                 leftFlipperOut = gamepad1.dpad_left || gamepad2.dpad_left;
                 rightFlipperOut = gamepad1.dpad_right || gamepad2.dpad_right;
             }
-
 
 
             if (leftFlipperOut) {//sets the position of the flippers
@@ -288,48 +300,90 @@ public class Omnidirectional_Drive extends LinearOpMode {
             leftColor.enableLed(colorSensorLEDOn);
             rightColor.enableLed(colorSensorLEDOn);
 
-            ///------------------Movement code below------------------\\\
 
-            //modify motor speed based off of how far the joystick is being pushed
-            motorSpeed = Math.max(0, Math.min(1, ((Math.sqrt(Math.pow(gamepad1.left_stick_x, 2) + Math.pow(gamepad1.left_stick_y, 2))) - 0.25) / 0.75));
-            spinSpeed = Math.max(0, Math.min(1, (Math.abs(gamepad1.right_stick_x) - buffer) / 0.75));
-
-            //set movement direction based off of stick
-            if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "left forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "left backwards";
-                } else {
-                    direction = "left";
-                }
-
-
-            } else if (gamepad1.left_stick_x > buffer) {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "right forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "right backwards";
-                } else {
-                    direction = "right";
-                }
-
-            } else {
-                if (gamepad1.left_stick_y < -buffer) {
-                    direction = "forwards";
-                } else if (gamepad1.left_stick_y > buffer) {
-                    direction = "backwards";
-                } else {
-                    direction = "stop";
-                }
-
+            //90 deg turning code ================================================================================================
+            if (gamepad1.left_bumper && !quarterTurnLeftFlag && !quarterTurnRightFlag) {
+                quarterTurnLeftFlag = true;
+                joystickControl = false;
+                initialRotation = frontLeftMotor.getCurrentPosition();
+                finalRotation = initialRotation - wheelRotations * ticksPerRev;
             }
 
-            //making the robot spin
-            if (gamepad1.right_stick_x > buffer) {
-                direction = "clockwise";
-            } else if (gamepad1.right_stick_x < -buffer) {
-                direction = "counter clockwise";
+            if (gamepad1.right_bumper && !quarterTurnLeftFlag && !quarterTurnRightFlag) {
+                quarterTurnRightFlag = true;
+                joystickControl = false;
+                initialRotation = frontLeftMotor.getCurrentPosition();
+                finalRotation = initialRotation + wheelRotations * ticksPerRev;
+            }
+
+
+            if (quarterTurnLeftFlag) {
+                if (frontLeftMotor.getCurrentPosition() > finalRotation) {
+                    direction = "counter clockwise";
+                    spinSpeed = 1;
+                } else {
+                    quarterTurnLeftFlag = false;
+                    joystickControl = true;
+                }
+            }
+
+            if (quarterTurnRightFlag) {
+                if (frontLeftMotor.getCurrentPosition() < finalRotation) {
+                    direction = "clockwise";
+                    spinSpeed = 1;
+                } else {
+                    quarterTurnRightFlag = false;
+                    joystickControl = true;
+                }
+            }
+
+            ///------------------Movement code below------------------\\\
+
+
+            //ensures that other processes arent being run
+            if (joystickControl) {
+
+                //modify motor speed based off of how far the joystick is being pushed
+                motorSpeed = Math.max(0, Math.min(1, ((Math.sqrt(Math.pow(gamepad1.left_stick_x, 2) + Math.pow(gamepad1.left_stick_y, 2))) - 0.25) / 0.75));
+                spinSpeed = Math.max(0, Math.min(1, (Math.abs(gamepad1.right_stick_x) - buffer) / 0.75));
+
+                //set movement direction based off of stick
+                if (gamepad1.left_stick_x < -buffer) { //buffer is how far the joystick needs to go before the robot starts moving
+                    if (gamepad1.left_stick_y < -buffer) {
+                        direction = "left forwards";
+                    } else if (gamepad1.left_stick_y > buffer) {
+                        direction = "left backwards";
+                    } else {
+                        direction = "left";
+                    }
+
+
+                } else if (gamepad1.left_stick_x > buffer) {
+                    if (gamepad1.left_stick_y < -buffer) {
+                        direction = "right forwards";
+                    } else if (gamepad1.left_stick_y > buffer) {
+                        direction = "right backwards";
+                    } else {
+                        direction = "right";
+                    }
+
+                } else {
+                    if (gamepad1.left_stick_y < -buffer) {
+                        direction = "forwards";
+                    } else if (gamepad1.left_stick_y > buffer) {
+                        direction = "backwards";
+                    } else {
+                        direction = "stop";
+                    }
+
+                }
+
+                //making the robot spin
+                if (gamepad1.right_stick_x > buffer) {
+                    direction = "clockwise";
+                } else if (gamepad1.right_stick_x < -buffer) {
+                    direction = "counter clockwise";
+                }
             }
 
 

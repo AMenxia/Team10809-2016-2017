@@ -45,7 +45,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Omnidirectional Drive Auto", group = "Linear Opmode")
+@Autonomous(name = "Omnidirectional Drive Auto BLUE RAMP", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
 //@Disabled
 public class Omnidirectional_Drive_Auto extends LinearOpMode {
@@ -96,7 +96,7 @@ public class Omnidirectional_Drive_Auto extends LinearOpMode {
         int shootMax = 1000;
         int shootMin = 0;
         int loadTimer = 0;
-        int loadTime = 2000;
+        int loadTime = 4000;
 
         boolean colorSensorLEDOn = false;    //if the color sensor LED is on or not
         boolean buttonPressed1 = false;     //if a,b,x, or y is pressed on gamepad1
