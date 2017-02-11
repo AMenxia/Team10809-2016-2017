@@ -39,6 +39,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -63,6 +64,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
     Servo rightFlipper = null;
     Servo loader = null;
     DcMotor shootMotor = null;
+    DcMotor arm = null;
+    Servo grabber = null;
     ColorSensor leftColor;  // Hardware Device Object
     ColorSensor rightColor;
     TouchSensor leftTouch;
@@ -96,6 +99,17 @@ public class Omnidirectional_Drive extends LinearOpMode {
         int shootMin = 0;
         int loadTimer = 0;
         int loadTime = 2000;
+
+        boolean manualArmControl = true;
+        boolean ballDropped = false;
+        int armMin = 10;
+        int armMax = 1750;
+        double armMaxSpeed = 0.2;
+        double armSpeed = armMaxSpeed;
+
+        double grabberOpen = 0.25;
+        double grabberClosed = 1;
+        boolean grabberGrabbing = false;
 
         boolean colorSensorLEDOn = false;    //if the color sensor LED is on or not
         boolean y2Pressed = false;           //if y has been pressed on gamepad 2
@@ -135,10 +149,16 @@ public class Omnidirectional_Drive extends LinearOpMode {
         loader = hardwareMap.servo.get("loader");
 
         shootMotor = hardwareMap.dcMotor.get("shoot");
+        arm = hardwareMap.dcMotor.get("arm");
+        grabber = hardwareMap.servo.get("grabber");
 
         shootMotor.setDirection(DcMotor.Direction.REVERSE);
         shootMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shootMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        arm.setDirection(DcMotor.Direction.FORWARD);
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Crow crow = new Crow(telemetry, frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor, leftFlipper, rightFlipper, shootMotor, leftColor, rightColor);
         //i.setCrow(crow);
@@ -175,6 +195,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
         leftFlipper.setPosition(leftFlipperBack);
         rightFlipper.setPosition(rightFlipperBack);
         loader.setPosition(loaderDown);
+        grabber.setPosition(grabberOpen);
 
         waitForStart();
         runtime.reset();
@@ -185,6 +206,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Direction :", direction + " Joystick Control: " + joystickControl);
             telemetry.addData("Motor Speed: ", motorSpeed);
             telemetry.addData("Spin Speed: ", spinSpeed);
+            telemetry.addData("Arm speed: ", armSpeed);
             telemetry.addData("L color - ", "Red: " + leftColor.red() + "Green: " + leftColor.green() + "Blue: " + leftColor.blue());
             telemetry.addData("R color - ", "Red: " + rightColor.red() + "Green: " + rightColor.green() + "Blue: " + rightColor.blue());
             telemetry.addData("Flippers - ", "Right " + rightFlipperOut + " Left " + leftFlipperOut);
@@ -194,6 +216,8 @@ public class Omnidirectional_Drive extends LinearOpMode {
             telemetry.addData("Encoders: ", "FL " + frontLeftMotor.getCurrentPosition() + " FR " + frontRightMotor.getCurrentPosition() + " BL " + backLeftMotor.getCurrentPosition() + " BR " + backRightMotor.getCurrentPosition());
             telemetry.addData("Shooting ", "Timer: " + shootTimer + " Pos: " + shootMotor.getCurrentPosition());
             telemetry.addData("Triggers: ", "L2: " + gamepad2.left_trigger + " R2: " + gamepad2.right_trigger);
+            telemetry.addData("Arm Pos: ", arm.getCurrentPosition());
+            telemetry.addData("Grabber: ", grabberGrabbing);
             telemetry.update();
 
 
@@ -287,6 +311,45 @@ public class Omnidirectional_Drive extends LinearOpMode {
             } else {
                 loader.setPosition(loaderDown);
             }
+
+            //arm
+            if(manualArmControl){
+                armSpeed = Math.pow((Math.abs(gamepad2.left_stick_y) - buffer)/0.75, 2)*armMaxSpeed;
+                if(gamepad2.left_stick_y < -buffer && arm.getCurrentPosition() <= armMax){
+                    arm.setPower(armSpeed);
+                } else if (gamepad2.left_stick_y > buffer && arm.getCurrentPosition() >= armMin){
+                    arm.setPower(-armSpeed);
+                } else {
+                    arm.setPower(0);
+                }
+
+                grabberGrabbing = gamepad2.x;
+            }
+
+            //grabber
+            if(grabberGrabbing){
+                grabber.setPosition(grabberClosed);
+            } else {
+                grabber.setPosition(grabberOpen);
+            }
+
+            if(!manualArmControl || !manualArmControl){
+                manualArmControl = false;
+                if(arm.getCurrentPosition() < armMax && !ballDropped){
+                    arm.setPower(armSpeed);
+                    grabberGrabbing = true;
+                } else if(arm.getCurrentPosition() >= armMax && !ballDropped){
+                    ballDropped = true;
+                } else if (arm.getCurrentPosition() > armMin && ballDropped){
+                    arm.setPower(-armSpeed);
+                    grabberGrabbing = false;
+                } else if (arm.getCurrentPosition() <= armMin && ballDropped) {
+                    ballDropped = false;
+                    manualArmControl = true;
+                }
+            }
+
+
 
 
             //turning on and off the light on the color sensor
