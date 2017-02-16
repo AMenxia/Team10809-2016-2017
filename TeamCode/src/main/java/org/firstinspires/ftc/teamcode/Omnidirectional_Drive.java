@@ -103,11 +103,11 @@ public class Omnidirectional_Drive extends LinearOpMode {
         boolean manualArmControl = true;
         boolean ballDropped = false;
         int armMin = 10;
-        int armMax = 1750;
-        double armMaxSpeed = 0.2;
+        int armMax = 1400;
+        double armMaxSpeed = 0.3;
         double armSpeed = armMaxSpeed;
 
-        double grabberOpen = 0.25;
+        double grabberOpen = 0.125;
         double grabberClosed = 1;
         boolean grabberGrabbing = false;
 
@@ -306,15 +306,47 @@ public class Omnidirectional_Drive extends LinearOpMode {
             if (shootTimer == 0) {
                 loaderOut = gamepad2.a; //maps loader position to A on gamepad2
             }
+
+            //auto dumping
+            if(gamepad2.right_bumper || !manualArmControl){
+                manualArmControl = false;
+                armSpeed = armMaxSpeed;
+                if(arm.getCurrentPosition() < armMax && !ballDropped){
+                    arm.setPower(armSpeed);
+                    grabberGrabbing = true;
+                } else if(arm.getCurrentPosition() >= armMax && !ballDropped){
+                    ballDropped = true;
+                } else if (arm.getCurrentPosition() > armMin && ballDropped){
+                    arm.setPower(-armSpeed);
+                    grabberGrabbing = false;
+                    if(arm.getCurrentPosition() < armMax/2){
+                        loaderOut = true;
+                    }
+                } else if (arm.getCurrentPosition() <= armMin && ballDropped) {
+                    ballDropped = false;
+                    manualArmControl = true;
+                }
+            }
+
+            //loader controll logic
             if (loaderOut) {
                 loader.setPosition(loaderUp);
             } else {
                 loader.setPosition(loaderDown);
             }
 
+            //E-Stop
+            if(gamepad2.left_bumper){
+                manualArmControl = true;
+                ballDropped = true;
+                joystickControl = true;
+                quarterTurnLeftFlag = false;
+                quarterTurnRightFlag = false;
+            }
+
             //arm
             if(manualArmControl){
-                armSpeed = Math.pow((Math.abs(gamepad2.left_stick_y) - buffer)/0.75, 2)*armMaxSpeed;
+                armSpeed = Math.pow(Math.max(0,(Math.abs(gamepad2.left_stick_y) - buffer)/0.75), 2)*armMaxSpeed;
                 if(gamepad2.left_stick_y < -buffer && arm.getCurrentPosition() <= armMax){
                     arm.setPower(armSpeed);
                 } else if (gamepad2.left_stick_y > buffer && arm.getCurrentPosition() >= armMin){
@@ -333,21 +365,6 @@ public class Omnidirectional_Drive extends LinearOpMode {
                 grabber.setPosition(grabberOpen);
             }
 
-            if(!manualArmControl || !manualArmControl){
-                manualArmControl = false;
-                if(arm.getCurrentPosition() < armMax && !ballDropped){
-                    arm.setPower(armSpeed);
-                    grabberGrabbing = true;
-                } else if(arm.getCurrentPosition() >= armMax && !ballDropped){
-                    ballDropped = true;
-                } else if (arm.getCurrentPosition() > armMin && ballDropped){
-                    arm.setPower(-armSpeed);
-                    grabberGrabbing = false;
-                } else if (arm.getCurrentPosition() <= armMin && ballDropped) {
-                    ballDropped = false;
-                    manualArmControl = true;
-                }
-            }
 
 
 
