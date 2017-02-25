@@ -45,10 +45,10 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Omnidirectional Drive Auto RED RAMP", group = "Linear Opmode")
+@Autonomous(name = "Omnidirectional Drive Auto BLUE CENTER", group = "Linear Opmode")
 // @Autonomous(...) is the other common choice
 //@Disabled
-public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
+public class Omnidirectional_Drive_Auto_BLUE_CENTER extends LinearOpMode {
 
     MediaPlayer spidersclaw;
     MediaPlayer kahoot1;
@@ -118,8 +118,8 @@ public class Omnidirectional_Drive_Auto_RED extends LinearOpMode {
         String leftColorSensed = "none";
         String rightColorSensed = "none";
 
-        String SIDE_COLOR = "red"; // <======================================================================
-        String PARK_LOCATION = "ramp"; //options are center, ramp, none
+        String SIDE_COLOR = "blue"; // <======================================================================
+        String PARK_LOCATION = "center"; //options are center, ramp, none
         String colorToPress = "none";
 
         boolean wallReached = false;

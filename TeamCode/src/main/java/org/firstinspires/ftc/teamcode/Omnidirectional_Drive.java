@@ -103,7 +103,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
         boolean manualArmControl = true;
         boolean ballDropped = false;
         int armMin = 10;
-        int armMax = 1400;
+        int armMax = 1250;
         double armMaxSpeed = 0.3;
         double armSpeed = armMaxSpeed;
 
@@ -347,7 +347,7 @@ public class Omnidirectional_Drive extends LinearOpMode {
             //arm
             if(manualArmControl){
                 armSpeed = Math.pow(Math.max(0,(Math.abs(gamepad2.left_stick_y) - buffer)/0.75), 2)*armMaxSpeed;
-                if(gamepad2.left_stick_y < -buffer && arm.getCurrentPosition() <= armMax){
+                if(gamepad2.left_stick_y < -buffer && arm.getCurrentPosition() <= armMax + 300){
                     arm.setPower(armSpeed);
                 } else if (gamepad2.left_stick_y > buffer && arm.getCurrentPosition() >= armMin){
                     arm.setPower(-armSpeed);
