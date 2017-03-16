@@ -146,7 +146,7 @@ public class Omnidirectional_Drive_Auto_RED_CENTER extends LinearOpMode {
 
         int parkTimer = 0;
         int parkCenterTime = 6000;
-        int parkRampTime = 8000;
+        int parkRampTime = 9000;
 
         int backUpTimer = 0;
         int backUpTime = 1000;
